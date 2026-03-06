@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Equipamento;
 
 class EquipamentoController extends Controller
 {
@@ -11,7 +12,13 @@ class EquipamentoController extends Controller
      */
     public function index()
     {
-        //
+        $stats = [
+        'total' => Equipamento::count(),
+        'disponivel' => Equipamento::where('situacao', 'disponivel')->count(),
+        'alocado' => Equipamento::where('situacao', 'alocado')->count(),
+        'manutencao' => Equipamento::where('situacao', 'manutencao')->count(),
+    ];
+    return view('dashboard', compact('stats'));
     }
 
     /**
