@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('nome');
             $table->string('serie')->nullable()->unique();
             $table->enum('cor', ['Preto', 'Amarelo', 'Ciano', 'Magenta', 'Não se aplica']);
+            $table->integer('quantidade_estoque')->default(0);
             $table->text('descricao');
             $table->enum('situacao', ['Disponivel', 'Alugado', 'Manutencao', 'Devolução']);
             $table->foreignId('cliente_id')->nullable()->constrained(); // Onde ele está agora

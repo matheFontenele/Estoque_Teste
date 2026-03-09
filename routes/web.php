@@ -7,7 +7,7 @@ use App\Http\Controllers\RequisicaoController;
 use App\Http\Controllers\EstoqueController;
 
 // Rotas Principais
-Route::get('/', [App\Http\Controllers\RequisicaoController::class, 'index'])->name('dashboard');
+Route::get('/', [RequisicaoController::class, 'dashboard'])->name('dashboard');
 Route::resource('clientes', ClienteController::class);
 Route::resource('requisicoes', RequisicaoController::class);
 Route::resource('equipamentos', EquipamentoController::class);

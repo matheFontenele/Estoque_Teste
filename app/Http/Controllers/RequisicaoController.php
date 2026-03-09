@@ -12,6 +12,24 @@ use Illuminate\Support\Facades\Auth;
 
 class RequisicaoController extends Controller
 {
+
+    //Mostrar lista de Dashboar (Pagina principal)
+public function dashboard()
+{
+    $stats = [
+        'total_clientes' => Cliente::count(),
+        'total_equipamentos' => Equipamento::count(),
+        'total_requisicoes' => Requisicao::count(),
+        'estoque_baixo' => Equipamento::where('quantidade_estoque', '<=', 5)->count(),
+        'estoque_baixo' => 0,
+    ];
+
+    $recentes = Requisicao::with(['cliente', 'equipamento'])->latest()->take(5)->get();
+
+    return view('dashboard', compact('stats', 'recentes'));
+}
+
+
     public function index()
     {
         $requisicoes = Requisicao::with(['cliente', 'user', 'equipamento'])->latest()->get();
@@ -68,13 +86,12 @@ class RequisicaoController extends Controller
 
             // 3. Atualizar estoque ou situação
             $equipamento->decrement('quantidade_estoque', $request->quantidade);
-            if($equipamento->quantidade_estoque <= 0) {
+            if ($equipamento->quantidade_estoque <= 0) {
                 $equipamento->update(['situacao' => 'alocado']);
             }
 
             DB::commit();
             return redirect()->route('requisicoes.index')->with('success', 'Requisição nº ' . $requisicao->id . ' criada com sucesso!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors('Erro: ' . $e->getMessage())->withInput();

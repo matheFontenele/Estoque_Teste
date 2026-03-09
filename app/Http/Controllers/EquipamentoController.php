@@ -12,21 +12,21 @@ class EquipamentoController extends Controller
      */
     public function index()
     {
-        $stats = [
-        'total' => Equipamento::count(),
-        'disponivel' => Equipamento::where('situacao', 'disponivel')->count(),
-        'alocado' => Equipamento::where('situacao', 'alocado')->count(),
-        'manutencao' => Equipamento::where('situacao', 'manutencao')->count(),
-    ];
-    return view('dashboard', compact('stats'));
-    }
+        // 1. BUSCAR A LISTA
+        $equipamentos = Equipamento::all();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        // 2. DEFINIR AS ESTATÍSTICAS
+        $stats = [
+            'total_clientes' => \App\Models\Cliente::count(),
+            'total_equipamentos' => Equipamento::count(),
+            'disponivel' => Equipamento::where('situacao', 'disponivel')->count(),
+            'alocado' => Equipamento::where('situacao', 'alocado')->count(),
+            'manutencao' => Equipamento::where('situacao', 'manutencao')->count(),
+            'estoque_baixo' => Equipamento::where('quantidade_estoque', '<=', 5)->count(),
+        ];
+
+        // Enviando tanto a lista quanto as estatísticas
+        return view('equipamentos.index', compact('equipamentos', 'stats'));
     }
 
     /**
@@ -34,38 +34,23 @@ class EquipamentoController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'patrimonio' => 'required|string|unique:equipamentos,patrimonio',
+            'quantidade_estoque' => 'required|integer|min:0',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        Equipamento::create($request->all());
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        return back()->with('success', 'Equipamento cadastrado com sucesso!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Equipamento $equipamento)
     {
-        //
+        $equipamento->delete();
+        return back()->with('success', 'Equipamento removido!');
     }
 }
