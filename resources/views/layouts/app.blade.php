@@ -7,6 +7,14 @@
     <title>SISTEMA | ESTOQUE</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
 </head>
 
 <body class="bg-gray-50 flex">
@@ -17,20 +25,26 @@
         </div>
 
         <nav class="flex-1 p-4 space-y-2">
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 hover:text-white transition group">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-lg transition group {{ request()->routeIs('dashboard') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
                 <i class="ph ph-chart-pie text-xl"></i> Dashboard
             </a>
-            <a href="{{ route('requisicoes.index') }}" class="flex items-center gap-3 p-3 rounded-lg bg-red-600 text-white shadow-lg shadow-red-900/20">
+
+            <a href="{{ route('requisicoes.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('requisicoes.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
                 <i class="ph ph-arrows-left-right text-xl"></i> Requisições
             </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 hover:text-white transition">
+
+            <a href="{{ route('equipamentos.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('equipamentos.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
                 <i class="ph ph-devices text-xl"></i> Equipamentos
             </a>
-            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 hover:text-white transition">
+
+            <a href="{{ route('estoque.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('estoque.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
+                <i class="ph ph-package text-xl"></i> Estoque
+            </a>
+
+            <a href="{{ route('clientes.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('clientes.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
                 <i class="ph ph-users text-xl"></i> Clientes
             </a>
         </nav>
-
         <div class="p-4 border-t border-slate-800">
             <div class="flex items-center gap-3 p-2">
                 <div class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">
