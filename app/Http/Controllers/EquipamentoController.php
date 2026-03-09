@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipamento;
+use App\Models\Estoque;
 
 class EquipamentoController extends Controller
 {
@@ -12,21 +13,19 @@ class EquipamentoController extends Controller
      */
     public function index()
     {
-        // 1. BUSCAR A LISTA
-        $equipamentos = Equipamento::all();
+        // Pegamos todos os equipamentos e todos os estoques
+        $equipamentos = \App\Models\Equipamento::with('estoque')->get();
+        $estoques = \App\Models\Estoque::all();
 
-        // 2. DEFINIR AS ESTATÍSTICAS
+        // Criamos o array de estatísticas que a View está pedindo
         $stats = [
-            'total_clientes' => \App\Models\Cliente::count(),
-            'total_equipamentos' => Equipamento::count(),
-            'disponivel' => Equipamento::where('situacao', 'disponivel')->count(),
-            'alocado' => Equipamento::where('situacao', 'alocado')->count(),
-            'manutencao' => Equipamento::where('situacao', 'manutencao')->count(),
-            'estoque_baixo' => Equipamento::where('quantidade_estoque', '<=', 5)->count(),
+            'total_equipamentos' => $equipamentos->count(),
+            'disponivel' => $equipamentos->where('situacao', 'disponivel')->count(),
+            'alocado' => $equipamentos->where('situacao', 'alocado')->count(),
         ];
 
-        // Enviando tanto a lista quanto as estatísticas
-        return view('equipamentos.index', compact('equipamentos', 'stats'));
+        // Passamos tudo para a view
+        return view('equipamentos.index', compact('equipamentos', 'estoques', 'stats'));
     }
 
     /**
@@ -36,13 +35,15 @@ class EquipamentoController extends Controller
     {
         $request->validate([
             'nome' => 'required|string|max:255',
-            'patrimonio' => 'required|string|unique:equipamentos,patrimonio',
+            'tombo' => 'required|string|unique:equipamentos,tombo', // Corrigido aqui
             'quantidade_estoque' => 'required|integer|min:0',
+            'estoque_id' => 'required|exists:estoques,id',
+            'situacao' => 'required|string'
         ]);
 
-        Equipamento::create($request->all());
+        \App\Models\Equipamento::create($request->all());
 
-        return back()->with('success', 'Equipamento cadastrado com sucesso!');
+        return redirect()->route('equipamentos.index')->with('success', 'Item cadastrado com sucesso!');
     }
 
     /**
