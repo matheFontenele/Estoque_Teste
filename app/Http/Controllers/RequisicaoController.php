@@ -2,82 +2,82 @@
 
 namespace App\Http\Controllers;
 
-// Importação dos Models
 use App\Models\Requisicao;
 use App\Models\Equipamento;
 use App\Models\Cliente;
-
-// Importações de Suporte
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\StoreRequisicaoRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class RequisicaoController extends Controller
 {
-    /**
-     * Lista todas as requisições (Histórico)
-     */
     public function index()
     {
-        $requisicoes = Requisicao::with(['cliente', 'user'])->latest()->get();
+        $requisicoes = Requisicao::with(['cliente', 'user', 'equipamento'])->latest()->get();
         return view('requisicoes.index', compact('requisicoes'));
     }
 
-    /**
-     * Abre o formulário de nova requisição
-     */
     public function create()
     {
+        $usuarios = User::all();
         $clientes = Cliente::all();
-        
-        // Só permite selecionar equipamentos que estão no estoque (disponíveis)
-        $equipamentosDisponiveis = Equipamento::where('situacao', 'disponivel')->get();
-        
-        return view('requisicoes.create', compact('clientes', 'equipamentosDisponiveis'));
+        // Carrega equipamentos e sua quantidade disponível
+        $equipamentos = Equipamento::where('situacao', 'disponivel')->get();
+
+        return view('requisicoes.create', compact('usuarios', 'clientes', 'equipamentos'));
     }
 
-    /**
-     * Salva a requisição e altera o estado do estoque
-     */
-    public function store(StoreRequisicaoRequest $request) 
+    public function store(Request $request)
     {
+        // Validação das regras de negócio
+        $request->validate([
+            'equipamento_id' => 'required|exists:equipamentos,id',
+            'quantidade' => 'required|integer|min:1',
+            'is_substituicao' => 'required|boolean',
+            'patrimonio_anterior' => 'required_if:is_substituicao,1',
+            'envio' => 'required|in:Rota,Transportadora,Correios',
+            'etiqueta' => 'required|in:Alucom,Moreia,ZapLoc',
+        ]);
+
         try {
             DB::beginTransaction();
 
-            // 1. Criar o registro da Requisição
-            $requisicao = Requisicao::create([
-                'data_prevista' => $request->data_prevista,
-                'etiqueta'      => $request->etiqueta,
-                'cliente_id'    => $request->cliente_id,
-                'tipo'          => $request->tipo,
-                'user_id'       => Auth::id(), 
-                'observacao'    => $request->observacao
-            ]);
-
-            // 2. Lógica de Substituição: Libera o equipamento antigo
-            if ($request->tipo === 'substituicao' && $request->tombo_antigo) {
-                Equipamento::where('tombo', $request->tombo_antigo)->update([
-                    'situacao'   => 'manutencao',
-                    'cliente_id' => null
-                ]);
+            // 1. Validar estoque disponível (Regra: não exceder o total)
+            $equipamento = Equipamento::findOrFail($request->equipamento_id);
+            if ($request->quantidade > $equipamento->quantidade_estoque) {
+                return back()->withErrors(['quantidade' => 'A quantidade excede o estoque disponível!'])->withInput();
             }
 
-            // 3. Atualiza o NOVO equipamento: Aloca para o cliente
-            $novoEquipamento = Equipamento::findOrFail($request->equipamento_id);
-            $novoEquipamento->update([
-                'situacao'   => 'alocado',
-                'cliente_id' => $request->cliente_id
+            // 2. Criar a Requisição
+            $requisicao = Requisicao::create([
+                'user_id'             => $request->user_id, // Solicitado
+                'data_solicitacao'    => $request->data_solicitacao ?? now(),
+                'previsao'            => $request->previsao,
+                'envio'               => $request->envio,
+                'estado'              => $request->estado,
+                'cidade'              => $request->cidade,
+                'cliente_id'          => $request->cliente_id,
+                'etiqueta'            => $request->etiqueta,
+                'quantidade'          => $request->quantidade,
+                'equipamento_id'      => $request->equipamento_id,
+                'is_substituicao'     => $request->is_substituicao,
+                'patrimonio_anterior' => $request->patrimonio_anterior,
+                'observacao'          => $request->observacao
             ]);
 
+            // 3. Atualizar estoque ou situação
+            $equipamento->decrement('quantidade_estoque', $request->quantidade);
+            if($equipamento->quantidade_estoque <= 0) {
+                $equipamento->update(['situacao' => 'alocado']);
+            }
+
             DB::commit();
-            return redirect()->route('requisicoes.index')->with('success', 'Requisição e movimentação de estoque realizadas!');
+            return redirect()->route('requisicoes.index')->with('success', 'Requisição nº ' . $requisicao->id . ' criada com sucesso!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors('Erro ao processar: ' . $e->getMessage())->withInput();
+            return back()->withErrors('Erro: ' . $e->getMessage())->withInput();
         }
     }
-
-    // Os demais métodos (show, edit, update, destroy) podem ser implementados conforme a necessidade.
 }

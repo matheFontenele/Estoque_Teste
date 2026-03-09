@@ -7,7 +7,7 @@
         <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Requisições</h1>
         <p class="text-slate-500">Gerencie e acompanhe o fluxo de equipamentos.</p>
     </div>
-    <a href="{{ route('requisicoes.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-200">
+    <a href="{{ route('requisicoes.create') }}" class="bg-red-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-200">
         <i class="ph ph-plus-circle text-xl"></i> Nova Requisição
     </a>
 </div>
