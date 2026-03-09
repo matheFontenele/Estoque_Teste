@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('equipamentos', function (Blueprint $table) {
             $table->id();
-            $table->string('tombo')->unique();
+            $table->string('tombo')->unique(); // Este será o seu "Patrimônio"
             $table->string('nome');
             $table->string('serie')->nullable()->unique();
-            $table->enum('cor', ['Preto', 'Amarelo', 'Ciano', 'Magenta', 'Não se aplica']);
+            $table->enum('cor', ['Preto', 'Amarelo', 'Ciano', 'Magenta', 'N/A'])->default('N/A');
             $table->integer('quantidade_estoque')->default(0);
-            $table->text('descricao');
-            $table->enum('situacao', ['Disponivel', 'Alugado', 'Manutencao', 'Devolução']);
-            $table->foreignId('cliente_id')->nullable()->constrained(); // Onde ele está agora
+            $table->text('descricao')->nullable(); // Adicionado nullable para não dar erro se estiver vazio
+            $table->enum('situacao', ['disponivel', 'alocado', 'manutencao', 'devolucao'])->default('disponivel');
             $table->foreignId('estoque_id')->nullable()->constrained('estoques');
+            $table->foreignId('cliente_id')->nullable()->constrained('clientes');
             $table->timestamps();
         });
     }

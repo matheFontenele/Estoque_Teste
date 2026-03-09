@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
-    protected $fillable = ['nome', 'email', 'telefone'];
-
+    protected $fillable = ['nome', 'cnpj', 'estado', 'cidade'];
     public function equipamentos()
     {
         return $this->hasMany(Equipamento::class);

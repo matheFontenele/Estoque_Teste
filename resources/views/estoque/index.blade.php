@@ -10,6 +10,31 @@
     </div>
 
     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+        <!--Tabela de filtro de estoque-->
+        <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-6">
+            <div class="w-full md:w-72">
+                <label class="block text-xs font-black text-slate-400 uppercase mb-2 ml-1">Filtrar por Unidade / Estoque</label>
+                <div class="relative">
+                    <select onchange="window.location.href='{{ route('estoque.index') }}?estoque_id=' + this.value"
+                        class="w-full rounded-2xl border-slate-200 bg-white p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all">
+                        <option value="">Todos os Estoques</option>
+                        @foreach($todosEstoques as $e)
+                        <option value="{{ $e->id }}" {{ request('estoque_id') == $e->id ? 'selected' : '' }}>
+                            {{ $e->nome }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <i class="ph ph-caret-down font-bold"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-500 uppercase">Itens mostrados: </span>
+                <span class="text-sm font-black text-slate-800">{{ $equipamentos->count() }}</span>
+            </div>
+        </div>
         <table class="w-full text-left">
             <thead class="bg-slate-50 border-b border-slate-100">
                 <tr>

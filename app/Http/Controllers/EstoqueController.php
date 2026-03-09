@@ -3,18 +3,28 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Equipamento; // Adicionado o ponto e vírgula aqui
+use App\Models\Equipamento;
+use App\Models\Estoque;
 
 class EstoqueController extends Controller
 {
     /**
      * Exibe a listagem do estoque
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Busca todos os equipamentos para listar na tabela de estoque
-        $equipamentos = Equipamento::all();
-        return view('estoque.index', compact('equipamentos'));
+        $todosEstoques = \App\Models\Estoque::all();
+
+        // Usamos with('estoque') para carregar o nome da unidade sem fazer várias consultas ao banco
+        $query = \App\Models\Equipamento::with('estoque');
+
+        if ($request->filled('estoque_id')) {
+            $query->where('estoque_id', $request->estoque_id);
+        }
+
+        $equipamentos = $query->get();
+
+        return view('estoque.index', compact('equipamentos', 'todosEstoques'));
     }
 
     /**

@@ -13,7 +13,5 @@ Route::resource('requisicoes', RequisicaoController::class);
 Route::resource('equipamentos', EquipamentoController::class);
 
 // Rotas de estoque
-Route::group(['prefix' => 'gestao-estoque'], function() {
-    Route::get('/', [EstoqueController::class, 'index'])->name('estoque.index');
-    Route::post('/update', [EstoqueController::class, 'update'])->name('estoque.update');
-});
+Route::get('/estoque', [EstoqueController::class, 'index'])->name('estoque.index');
+Route::post('/estoque/update', [EstoqueController::class, 'update'])->name('estoque.update');

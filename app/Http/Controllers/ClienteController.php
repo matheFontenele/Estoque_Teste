@@ -28,7 +28,16 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'cnpj' => 'required|string|unique:clientes,cnpj',
+            'estado' => 'required|string|max:2',
+            'cidade' => 'required|string|max:255',
+        ]);
+
+        \App\Models\Cliente::create($request->all());
+
+        return back()->with('success', 'Cliente cadastrado com sucesso!');
     }
 
     /**
