@@ -3,7 +3,38 @@
 @section('subtitle', 'Inventário de Equipamentos')
 
 @section('content')
-<div class="max-w-7xl mx-auto" x-data="{ openModal: false }">
+<div class="max-w-7xl mx-auto" x-data="{ 
+    openModal: false, 
+    categoriaSelecionada: 'equipamento',
+    filaItens: [],
+    novoItem: {
+        nome: '',
+        patrimonio: '',
+        quantidade: 1,
+        estoque_id: '',
+        situacao: 'disponivel'
+    },
+    adicionarAFila() {
+        if(!this.novoItem.nome || !this.novoItem.estoque_id) {
+            alert('Preencha ao menos Nome e Almoxarifado');
+            return;
+        }
+        // Adiciona uma cópia do item atual na fila
+        this.filaItens.push({
+            ...this.novoItem, 
+            categoria: this.categoriaSelecionada,
+            // Texto para exibição no estoque
+            estoque_nome: $el.closest('form').querySelector('select[name=estoque_id] option:checked').text
+        });
+        // Limpa apenas os campos de identificação para o próximo item
+        this.novoItem.nome = '';
+        this.novoItem.patrimonio = '';
+        this.novoItem.quantidade = 1;
+    },
+    removerDaFila(index) {
+        this.filaItens.splice(index, 1);
+    }
+}">
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -23,17 +54,12 @@
             Novo Item
         </button>
     </div>
-    <!--Campo de busca-->
+
     <form action="{{ route('equipamentos.index') }}" method="GET" class="relative w-full max-w-md mb-6">
         <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input
-            type="text"
-            name="search"
-            value="{{ request('search') }}"
-            placeholder="Pesquisar por nome ou patrimônio..."
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Pesquisar por nome ou patrimônio..."
             class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none transition-all shadow-sm">
     </form>
-
 
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <table class="w-full text-left">
@@ -51,34 +77,34 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4">
                         @php
-                        $corBadge = match(strtolower($item->categoria)) {
-                        'insumos', 'toners' => 'bg-purple-50 text-purple-600',
-                        'peças' => 'bg-blue-50 text-blue-600',
-                        default => 'bg-red-50 text-red-600',
-                        };
+                            $corBadge = match(strtolower($item->categoria)) {
+                                'insumos', 'toners' => 'bg-purple-50 text-purple-600',
+                                'peças' => 'bg-blue-50 text-blue-600',
+                                default => 'bg-red-50 text-red-600',
+                            };
                         @endphp
                         <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase {{ $corBadge }}">
                             {{ $item->categoria ?? 'Equipamento' }}
                         </span>
                         <span class="font-bold text-slate-700 block mt-1">{{ $item->nome }}</span>
                     </td>
-
+                    
                     <td class="px-6 py-4 text-xs">
                         @if(in_array(strtolower($item->categoria), ['insumos', 'toners', 'peças', 'peças de impressora']))
-                        <span class="text-slate-400 italic font-medium tracking-tight">Consumível / Sem Patrimônio</span>
+                            <span class="text-slate-400 italic font-medium tracking-tight">Consumível / Sem Patrimônio</span>
                         @else
-                        <div class="flex flex-col gap-0.5">
-                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Tombo:</strong> {{ $item->patrimonio ?? '---' }}</span>
-                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Série:</strong> {{ $item->numero_serie ?? '---' }}</span>
-                        </div>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Tombo:</strong> {{ $item->patrimonio ?? '---' }}</span>
+                                <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Série:</strong> {{ $item->numero_serie ?? '---' }}</span>
+                            </div>
                         @endif
                     </td>
 
                     <td class="px-6 py-4 text-center">
                         @if($item->quantidade_estoque > 0)
-                        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase border border-emerald-100">Disponível</span>
+                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase border border-emerald-100">Disponível</span>
                         @else
-                        <span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase border border-amber-100">Alocado</span>
+                            <span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase border border-amber-100">Alocado</span>
                         @endif
                     </td>
 
@@ -86,17 +112,10 @@
                         <div class="flex items-center gap-2">
                             <i class="ph ph-map-pin {{ $item->quantidade_estoque > 0 ? 'text-emerald-400' : 'text-red-400' }}"></i>
                             <span class="text-sm font-bold text-slate-600">
-                                @php
-                                $ultimaMov = $item->requisicoes->first();
-                                @endphp
-
-                                @if($item->quantidade_estoque > 0)
-                                Estoque Central
-                                @elseif($ultimaMov && $ultimaMov->cliente)
-                                {{ $ultimaMov->cliente->razao_social }}
-                                @else
-                                Destino não registrado
-                                @endif
+                                @php $ultimaMov = $item->requisicoes->first(); @endphp
+                                @if($item->quantidade_estoque > 0) Estoque Central
+                                @elseif($ultimaMov && $ultimaMov->cliente) {{ $ultimaMov->cliente->razao_social }}
+                                @else Destino não registrado @endif
                             </span>
                         </div>
                     </td>
@@ -112,90 +131,102 @@
         </table>
     </div>
 
-    <div x-show="openModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-cloak>
-
-        <div @click.away="openModal = false" class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden">
-            <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
+    <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+        <div @click.away="openModal = false" class="bg-white rounded-3xl shadow-2xl max-w-xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="bg-slate-900 p-6 text-white flex justify-between items-center shrink-0">
                 <h3 class="font-black text-xl flex items-center gap-2">
-                    <i class="ph ph-desktop-tower"></i> Novo Equipamento
+                    <i class="ph ph-package"></i> Entrada de Materiais
                 </h3>
                 <button @click="openModal = false" class="hover:rotate-90 transition-transform">
                     <i class="ph ph-x text-2xl"></i>
                 </button>
             </div>
 
-            <form action="{{ route('equipamentos.store') }}" method="POST" class="p-8 space-y-5">
+            <form action="{{ route('equipamentos.store') }}" method="POST" class="p-8 space-y-5 overflow-y-auto">
                 @csrf
+                
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Tipo do Item</label>
+                    <div class="relative">
+                        <select x-model="categoriaSelecionada" name="categoria"
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm appearance-none">
+                            <option value="equipamento">Equipamento (Monitor, Micro, Impressora)</option>
+                            <option value="insumo">Insumo (Toner, Papel, Cartucho)</option>
+                            <option value="peça">Peça para Manutenção</option>
+                        </select>
+                        <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                </div>
 
-
-                <form action="{{ route('equipamentos.index') }}" method="GET" class="relative w-full max-w-md mb-8">
-                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="Buscar por nome ou patrimônio..."
-                        class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all shadow-sm">
-                </form>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Descrição do Item</label>
-                    <input type="text" name="nome" required placeholder="Ex: Notebook Dell Latitude"
+                    <input type="text" x-model="novoItem.nome" name="nome" required placeholder="Ex: HP LaserJet M1132"
                         class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div x-show="categoriaSelecionada === 'equipamento'">
                         <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Patrimônio / SN</label>
-                        <input type="text" name="tombo" required class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all">
+                        <input type="text" x-model="novoItem.patrimonio" name="patrimonio" :required="categoriaSelecionada === 'equipamento'"
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm">
                     </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Qtd Inicial</label>
-                        <input type="number" name="quantidade_estoque" value="1" min="0"
-                            class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all">
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Almoxarifado / Destino</label>
-                    <div class="relative">
-                        <select name="estoque_id" required
-                            class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all appearance-none">
-                            <option value="">Selecione a Unidade</option>
-                            @foreach($estoques as $estoque)
-                            <option value="{{ $estoque->id }}">{{ $estoque->nome }}</option>
-                            @endforeach
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                            <i class="ph ph-caret-down font-bold"></i>
+                    <div x-show="categoriaSelecionada !== 'equipamento'">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Quantidade</label>
+                        <input type="number" x-model="novoItem.quantidade" name="quantidade_estoque" min="1"
+                            class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm">
+                    </div>
+
+                    <div :class="categoriaSelecionada === 'equipamento' ? '' : 'col-span-1'">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Almoxarifado</label>
+                        <div class="relative">
+                            <select x-model="novoItem.estoque_id" name="estoque_id" required
+                                class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm appearance-none">
+                                <option value="">Selecione...</option>
+                                @foreach($estoques as $estoque)
+                                <option value="{{ $estoque->id }}">{{ $estoque->nome }}</option>
+                                @endforeach
+                            </select>
+                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Situação Inicial</label>
-                    <div class="relative">
-                        <select name="situacao" class="w-full rounded-2xl border-slate-200 bg-slate-50 p-3 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all appearance-none">
-                            <option value="disponivel">Disponível</option>
-                            <option value="alocado">Alocado</option>
-                            <option value="manutencao">Manutenção</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                            <i class="ph ph-caret-down font-bold"></i>
-                        </div>
+                <button type="button" @click="adicionarAFila()" class="w-full py-3 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center gap-2">
+                    <i class="ph ph-plus-square"></i> Acrescentar outro na lista
+                </button>
+
+                <div x-show="filaItens.length > 0" class="bg-slate-50 rounded-2xl border border-slate-100 p-4 space-y-3">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Itens para Salvar</p>
+                    <div class="space-y-2 max-h-32 overflow-y-auto pr-2">
+                        <template x-for="(item, index) in filaItens" :key="index">
+                            <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-black text-slate-700" x-text="item.nome"></span>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase" x-text="item.categoria + ' | ' + (item.patrimonio || 'Qtd: '+item.quantidade)"></span>
+                                </div>
+                                <button type="button" @click="removerDaFila(index)" class="text-red-400 hover:text-red-600 p-1">
+                                    <i class="ph ph-trash-simple font-bold"></i>
+                                </button>
+                                <input type="hidden" :name="'itens['+index+'][nome]'" :value="item.nome">
+                                <input type="hidden" :name="'itens['+index+'][categoria]'" :value="item.categoria">
+                                <input type="hidden" :name="'itens['+index+'][patrimonio]'" :value="item.patrimonio">
+                                <input type="hidden" :name="'itens['+index+'][quantidade_estoque]'" :value="item.quantidade">
+                                <input type="hidden" :name="'itens['+index+'][estoque_id]'" :value="item.estoque_id">
+                                <input type="hidden" :name="'itens['+index+'][situacao]'" :value="item.situacao">
+                            </div>
+                        </template>
                     </div>
                 </div>
 
-                <div class="flex gap-3 pt-4">
+                <div class="flex gap-3 pt-4 shrink-0 bg-white">
                     <button type="button" @click="openModal = false" class="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 rounded-2xl transition-all">
                         Cancelar
                     </button>
-                    <button type="submit" class="flex-1 py-4 font-black text-white bg-red-600 rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95">
-                        Salvar Item
+                    <button type="submit" 
+                        class="flex-[2] py-4 font-black text-white bg-red-600 rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Finalizar e Salvar <span x-show="filaItens.length > 0" x-text="'('+filaItens.length+')'"></span>
                     </button>
                 </div>
             </form>
