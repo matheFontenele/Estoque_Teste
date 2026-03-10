@@ -16,7 +16,7 @@
         <div class="md:col-span-1 space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200">
                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Dados Cadastrais</h3>
-                
+
                 <div class="space-y-4">
                     <div>
                         <p class="text-[10px] font-black text-slate-400 uppercase">CNPJ</p>
@@ -24,12 +24,15 @@
                     </div>
                     <div>
                         <p class="text-[10px] font-black text-slate-400 uppercase">Localização</p>
-                        <p class="font-bold text-slate-700">{{ $cliente->cidade }} - {{ $cliente->estado }}</p>
+                        <p class="font-bold text-slate-700">{{ $cliente->endereco }} - {{ $cliente->cidade }} - {{ $cliente->estado }}</p>
                     </div>
                     <div class="pt-4 border-t border-slate-100">
                         <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tempo de SLA</p>
                         <div class="p-3 bg-slate-50 rounded-xl text-sm text-slate-600 leading-relaxed italic">
-                            "{{ $cliente->sla_texto ?? 'Nenhum SLA definido para este contrato.' }}"
+                            <p><strong>SLA de Atendimento:</strong> {{ $cliente->sla['Atendimento'] ?? 'Não definido' }} horas</p>
+                            <p><strong>SLA de Insumos:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
+                            <p><strong>SLA de Substituição:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
+                            <p><strong>SLA de Remanejamento:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
                         </div>
                     </div>
                 </div>
@@ -44,7 +47,7 @@
                         {{ $cliente->equipamentos->count() }} Ativos
                     </span>
                 </div>
-                
+
                 <table class="w-full text-left">
                     <thead class="bg-slate-50">
                         <tr>

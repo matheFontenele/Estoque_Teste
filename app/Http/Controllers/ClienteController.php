@@ -10,9 +10,22 @@ class ClienteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clientes = \App\Models\Cliente::all();
+
+        $query = Cliente::query();
+
+        // Verifica se há um termo de busca
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nome', 'like', "%{$search}%")
+                    ->orWhere('cnpj', 'like', "%{$search}%");
+            });
+        }
+
+        $clientes = $query->orderBy('nome')->get();
+
         return view('clientes.index', compact('clientes'));
     }
 

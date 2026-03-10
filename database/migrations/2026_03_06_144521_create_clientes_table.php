@@ -17,7 +17,10 @@ return new class extends Migration
             $table->string('cnpj')->unique();
             $table->string('estado', 2);
             $table->string('cidade');
+            $table->string('endereco');
             $table->timestamps();
+            // Adicionando o campo SLA como JSON
+            $table->json('sla')->nullable();
         });
     }
 

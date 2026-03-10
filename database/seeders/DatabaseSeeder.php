@@ -37,13 +37,27 @@ class DatabaseSeeder extends Seeder
                 'nome' => 'HUAC - Hospital Universitario Alcides Carneiro',
                 'cnpj' => '12.345.678/0001-00',
                 'estado' => 'PB',
-                'cidade' => 'Campina Grande'
+                'cidade' => 'Campina Grande',
+                'endereco' => 'Endereço de teste tal CEP 0000000',
+                'sla' => [
+                    'Atendimento' => 4,
+                    'Insumos' => 24,
+                    'Substituição' => 48,
+                    'Remanejamento' => 72
+                ]
             ],
             [
                 'nome' => 'Comando da Aeronautica',
                 'cnpj' => '98.765.432/0001-99',
                 'estado' => 'DF',
-                'cidade' => 'Brasilia'
+                'cidade' => 'Brasilia',
+                'endereco' => 'Endereço de teste tal CEP 0000000',
+                'sla' => [
+                    'Atendimento' => 4,    // Tempo em horas, por exemplo
+                    'Insumos' => 24,
+                    'Substituição' => 48,
+                    'Remanejamento' => 72
+                ]
             ],
         ];
 
@@ -62,7 +76,7 @@ class DatabaseSeeder extends Seeder
                 'cor' => 'N/A',
                 'descricao' => 'I7, 8GB RAM, SSD 240GB',
                 'estoque_id' => $estoqueFortaleza->id
-            ], // <-- Verifique se tem essa vírgula e colchete
+            ],
             [
                 'nome' => 'MULTIFUNCIONAL',
                 'tombo' => 88769,

@@ -1,6 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+    <form action="{{ route('clientes.index') }}" method="GET" class="w-full md:w-96">
+        <div class="relative">
+            <input type="text"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Buscar por nome ou CNPJ..."
+                class="w-full rounded-2xl border-slate-200 bg-white p-3 pl-11 font-bold outline-none focus:ring-2 focus:ring-red-500 shadow-sm transition-all">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                <i class="ph ph-magnifying-glass font-bold"></i>
+            </div>
+        </div>
+    </form>
+</div>
+
+
 <div class="max-w-6xl mx-auto py-8 px-4" x-data="{ openModal: false }">
     <div class="flex justify-between items-center mb-8">
         <div>
@@ -50,7 +66,13 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Nenhum cliente encontrado.</td>
+                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">
+                        @if(request('search'))
+                        Nenhum cliente encontrado para "{{ request('search') }}".
+                        @else
+                        Nenhum cliente cadastrado.
+                        @endif
+                    </td>
                 </tr>
                 @endforelse
             </tbody>
