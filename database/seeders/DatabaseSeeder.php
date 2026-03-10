@@ -43,7 +43,9 @@ class DatabaseSeeder extends Seeder
                     'Atendimento' => 4,
                     'Insumos' => 24,
                     'Substituição' => 48,
-                    'Remanejamento' => 72
+                    'Remanejamento' => 72,
+                    'Tipo' => 'Compativel'
+
                 ]
             ],
             [
@@ -56,7 +58,8 @@ class DatabaseSeeder extends Seeder
                     'Atendimento' => 4,    // Tempo em horas, por exemplo
                     'Insumos' => 24,
                     'Substituição' => 48,
-                    'Remanejamento' => 72
+                    'Remanejamento' => 72,
+                    'Tipo' => 'Original'
                 ]
             ],
         ];

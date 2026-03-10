@@ -33,6 +33,7 @@
                             <p><strong>SLA de Insumos:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
                             <p><strong>SLA de Substituição:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
                             <p><strong>SLA de Remanejamento:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
+                            <p><strong>Tipos de Insumos:</strong> {{ $cliente->sla['Tipo'] ?? 'Não definido' }}</p>
                         </div>
                     </div>
                 </div>
