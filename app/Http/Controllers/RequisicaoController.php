@@ -4,97 +4,101 @@ namespace App\Http\Controllers;
 
 use App\Models\Requisicao;
 use App\Models\Equipamento;
-use App\Models\Cliente;
 use App\Models\User;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class RequisicaoController extends Controller
 {
-
-    //Mostrar lista de Dashboar (Pagina principal)
-public function dashboard()
-{
-    $stats = [
-        'total_clientes' => Cliente::count(),
-        'total_equipamentos' => Equipamento::count(),
-        'total_requisicoes' => Requisicao::count(),
-        'estoque_baixo' => Equipamento::where('quantidade_estoque', '<=', 5)->count(),
-        'estoque_baixo' => 0,
-    ];
-
-    $recentes = Requisicao::with(['cliente', 'equipamento'])->latest()->take(5)->get();
-
-    return view('dashboard', compact('stats', 'recentes'));
-}
-
-
+    /**
+     * Lista todas as requisições
+     */
     public function index()
     {
-        $requisicoes = Requisicao::with(['cliente', 'user', 'equipamento'])->latest()->get();
+        $requisicoes = Requisicao::with(['cliente', 'equipamento', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('requisicoes.index', compact('requisicoes'));
+    }
+
+    /**
+     * Exibe o Dashboard (Home)
+     */
+    public function dashboard()
+    {
+        $stats = [
+            'total_equipamentos' => Equipamento::sum('quantidade_estoque'),
+            'total_clientes' => Cliente::count(),
+            'estoque_baixo' => Equipamento::where('quantidade_estoque', '<', 5)->count(),
+            'requisicoes_recentes' => Requisicao::with(['cliente', 'equipamento'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
+            'total_requisicoes' => Requisicao::count(),
+        ];
+
+        return view('dashboard', compact('stats'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'cliente_id'       => 'required|exists:clientes,id',
+            'equipamento_id'   => 'required|exists:equipamentos,id',
+            'quantidade'       => 'required|integer|min:1',
+            'user_id'          => 'required|exists:users,id',
+            'envio'            => 'required',
+            'etiqueta'         => 'required',
+            'data_solicitacao' => 'required|date',
+            'previsao'         => 'required|date', // Mudamos para required para evitar o erro de campo vazio
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $equipamento = Equipamento::findOrFail($request->equipamento_id);
+
+            if ($equipamento->quantidade_estoque < $request->quantidade) {
+                return back()->withErrors(['quantidade' => 'Estoque insuficiente.'])->withInput();
+            }
+
+            $equipamento->decrement('quantidade_estoque', $request->quantidade);
+
+            $requisicao = new Requisicao();
+            $requisicao->cliente_id         = $request->cliente_id;
+            $requisicao->equipamento_id     = $request->equipamento_id;
+            $requisicao->user_id            = $request->user_id;
+            $requisicao->quantidade         = $request->quantidade;
+            $requisicao->envio              = $request->envio;
+            $requisicao->etiqueta           = $request->etiqueta;
+            $requisicao->estado             = $request->estado;
+            $requisicao->cidade             = $request->cidade;
+            
+            // AQUI O AJUSTE: Preenchemos as duas colunas com o mesmo valor
+            $requisicao->data_prevista      = $request->previsao; 
+            $requisicao->previsao           = $request->previsao; // <--- Adicione esta linha
+            
+            $requisicao->is_substituicao    = $request->is_substituicao ?? 0;
+            $requisicao->patrimonio_anterior = $request->patrimonio_anterior;
+            $requisicao->save();
+
+            DB::commit();
+
+            return redirect()->route('requisicoes.index')->with('success', 'Requisição gerada com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Erro: ' . $e->getMessage()])->withInput();
+        }
     }
 
     public function create()
     {
         $usuarios = User::all();
         $clientes = Cliente::all();
-        // Carrega equipamentos e sua quantidade disponível
-        $equipamentos = Equipamento::where('situacao', 'disponivel')->get();
+        $equipamentos = Equipamento::where('quantidade_estoque', '>', 0)->get();
 
         return view('requisicoes.create', compact('usuarios', 'clientes', 'equipamentos'));
-    }
-
-    public function store(Request $request)
-    {
-        // Validação das regras de negócio
-        $request->validate([
-            'equipamento_id' => 'required|exists:equipamentos,id',
-            'quantidade' => 'required|integer|min:1',
-            'is_substituicao' => 'required|boolean',
-            'patrimonio_anterior' => 'required_if:is_substituicao,1',
-            'envio' => 'required|in:Rota,Transportadora,Correios',
-            'etiqueta' => 'required|in:Alucom,Moreia,ZapLoc',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // 1. Validar estoque disponível (Regra: não exceder o total)
-            $equipamento = Equipamento::findOrFail($request->equipamento_id);
-            if ($request->quantidade > $equipamento->quantidade_estoque) {
-                return back()->withErrors(['quantidade' => 'A quantidade excede o estoque disponível!'])->withInput();
-            }
-
-            // 2. Criar a Requisição
-            $requisicao = Requisicao::create([
-                'user_id'             => $request->user_id, // Solicitado
-                'data_solicitacao'    => $request->data_solicitacao ?? now(),
-                'previsao'            => $request->previsao,
-                'envio'               => $request->envio,
-                'estado'              => $request->estado,
-                'cidade'              => $request->cidade,
-                'cliente_id'          => $request->cliente_id,
-                'etiqueta'            => $request->etiqueta,
-                'quantidade'          => $request->quantidade,
-                'equipamento_id'      => $request->equipamento_id,
-                'is_substituicao'     => $request->is_substituicao,
-                'patrimonio_anterior' => $request->patrimonio_anterior,
-                'observacao'          => $request->observacao
-            ]);
-
-            // 3. Atualizar estoque ou situação
-            $equipamento->decrement('quantidade_estoque', $request->quantidade);
-            if ($equipamento->quantidade_estoque <= 0) {
-                $equipamento->update(['situacao' => 'alocado']);
-            }
-
-            DB::commit();
-            return redirect()->route('requisicoes.index')->with('success', 'Requisição nº ' . $requisicao->id . ' criada com sucesso!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors('Erro: ' . $e->getMessage())->withInput();
-        }
     }
 }

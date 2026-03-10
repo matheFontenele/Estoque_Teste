@@ -3,6 +3,22 @@
 @section('content')
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <div class="max-w-5xl mx-auto py-8 px-4" x-data="{ isSubstituicao: false }">
+    <!--Mensagem em caso de erro-->
+    @if ($errors->any())
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-6">
+        <ul class="list-disc list-inside text-sm font-bold">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    @if (session('success'))
+    <div class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded-xl mb-6 font-bold">
+        {{ session('success') }}
+    </div>
+    @endif
     <form action="{{ route('requisicoes.store') }}" method="POST" class="space-y-6">
         @csrf
 

@@ -61,7 +61,7 @@
         </div>
         <table class="w-full text-left">
             <tbody class="divide-y divide-slate-100">
-                @forelse($recentes as $req)
+                @forelse($stats['requisicoes_recentes'] as $req)
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4">
                         <span class="font-bold text-slate-700">{{ $req->cliente->nome }}</span>
