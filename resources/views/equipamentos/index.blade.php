@@ -35,54 +35,79 @@
     </form>
 
 
-    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-        <table class="w-full text-left border-collapse">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left">
             <thead class="bg-slate-50 border-b border-slate-100">
                 <tr>
-                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Equipamento</th>
-                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Patrimônio</th>
-                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center">Qtd. Estoque</th>
-                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Situação</th>
-                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider text-right">Ações</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Categoria / Nome</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Identificação</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Situação</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Localização Atual</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Ações</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-                @forelse($equipamentos as $equipamento)
+                @foreach($equipamentos as $item)
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="px-6 py-4 font-bold text-slate-700">{{ $equipamento->nome }}</td>
-                    <td class="px-6 py-4 text-slate-500 font-mono text-sm">{{ $equipamento->tombo }}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="font-black {{ $equipamento->quantidade_estoque <= 5 ? 'text-red-600' : 'text-slate-700' }}">
-                            {{ $equipamento->quantidade_estoque }}
-                        </span>
-                    </td>
                     <td class="px-6 py-4">
                         @php
-                        $statusClasses = [
-                        'disponivel' => 'bg-emerald-100 text-emerald-700',
-                        'alocado' => 'bg-blue-100 text-blue-700',
-                        'manutencao' => 'bg-amber-100 text-amber-700'
-                        ];
+                        $corBadge = match(strtolower($item->categoria)) {
+                        'insumos', 'toners' => 'bg-purple-50 text-purple-600',
+                        'peças' => 'bg-blue-50 text-blue-600',
+                        default => 'bg-red-50 text-red-600',
+                        };
                         @endphp
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase {{ $statusClasses[$equipamento->situacao] ?? 'bg-slate-100' }}">
-                            {{ $equipamento->situacao }}
+                        <span class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase {{ $corBadge }}">
+                            {{ $item->categoria ?? 'Equipamento' }}
                         </span>
+                        <span class="font-bold text-slate-700 block mt-1">{{ $item->nome }}</span>
                     </td>
+
+                    <td class="px-6 py-4 text-xs">
+                        @if(in_array(strtolower($item->categoria), ['insumos', 'toners', 'peças', 'peças de impressora']))
+                        <span class="text-slate-400 italic font-medium tracking-tight">Consumível / Sem Patrimônio</span>
+                        @else
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Tombo:</strong> {{ $item->patrimonio ?? '---' }}</span>
+                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Série:</strong> {{ $item->numero_serie ?? '---' }}</span>
+                        </div>
+                        @endif
+                    </td>
+
+                    <td class="px-6 py-4 text-center">
+                        @if($item->quantidade_estoque > 0)
+                        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase border border-emerald-100">Disponível</span>
+                        @else
+                        <span class="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase border border-amber-100">Alocado</span>
+                        @endif
+                    </td>
+
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-map-pin {{ $item->quantidade_estoque > 0 ? 'text-emerald-400' : 'text-red-400' }}"></i>
+                            <span class="text-sm font-bold text-slate-600">
+                                @php
+                                $ultimaMov = $item->requisicoes->first();
+                                @endphp
+
+                                @if($item->quantidade_estoque > 0)
+                                Estoque Central
+                                @elseif($ultimaMov && $ultimaMov->cliente)
+                                {{ $ultimaMov->cliente->razao_social }}
+                                @else
+                                Destino não registrado
+                                @endif
+                            </span>
+                        </div>
+                    </td>
+
                     <td class="px-6 py-4 text-right">
-                    <td class="px-6 py-4 flex justify-end gap-3">
-                        <a href="{{ route('equipamentos.show', $equipamento->id) }}"
-                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            title="Detalhes">
-                            <i class="ph ph-eye text-lg font-bold"></i>
+                        <a href="{{ route('equipamentos.show', $item->id) }}" class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-red-600 hover:text-white transition-all">
+                            <i class="ph ph-eye font-bold"></i>
                         </a>
                     </td>
-                    </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">Nenhum equipamento cadastrado.</td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>

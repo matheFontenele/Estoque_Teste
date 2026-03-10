@@ -18,13 +18,15 @@ class EquipamentoController extends Controller
 
         // 1. Busca os equipamentos com o filtro
         $equipamentos = Equipamento::query()
+            ->with(['requisicoes' => function ($q) {
+                $q->latest()->with('cliente');
+            }])
             ->when($search, function ($query, $search) {
                 return $query->where('nome', 'like', "%{$search}%")
-                    ->orWhere('patrimonio', 'like', "%{$search}%");
+                    ->orWhere('patrimonio', 'like', "%{$search}%")
+                    ->orWhere('categoria', 'like', "%{$search}%");
             })
-            ->orderBy('nome', 'asc')
             ->get();
-
         // 2. Busca a lista de estoques/unidades para o Modal de cadastro
         $estoques = Estoque::all();
 
