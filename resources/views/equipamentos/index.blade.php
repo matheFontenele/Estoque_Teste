@@ -14,26 +14,28 @@
         estoque_id: '',
         situacao: 'disponivel'
     },
-    adicionarAFila() {
+adicionarAFila() {
     if(!this.novoItem.nome || !this.novoItem.estoque_id) {
         alert('Por favor, preencha o nome e selecione o almoxarifado.');
         return;
     }
 
-    // Adiciona o item atual ao array da fila
     this.filaItens.push({
         nome: this.novoItem.nome,
-        patrimonio: this.categoriaSelecionada === 'equipamento' ? this.novoItem.patrimonio : null,
+        // Mudamos o nome da chave para 'tombo' para facilitar o mapeamento
+        tombo: this.categoriaSelecionada === 'equipamento' ? this.novoItem.patrimonio : null, 
         quantidade: this.categoriaSelecionada === 'equipamento' ? 1 : this.novoItem.quantidade,
         categoria: this.categoriaSelecionada,
         estoque_id: this.novoItem.estoque_id
     });
 
-    // Limpa os campos para o próximo cadastro mantendo o estoque selecionado
     this.novoItem.nome = '';
     this.novoItem.patrimonio = '';
     this.novoItem.quantidade = 1;
-}
+},
+    removerDaFila(index) {
+        this.filaItens.splice(index, 1);
+    }
 }">
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -77,9 +79,9 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4">
                         @php
-                        $corBadge = match(strtolower($item->categoria)) {
-                        'insumos', 'toners' => 'bg-purple-50 text-purple-600',
-                        'peças' => 'bg-blue-50 text-blue-600',
+                        $corBadge = match(strtolower($item->categoria ?? '')) {
+                        'insumo', 'insumos', 'toners' => 'bg-purple-50 text-purple-600',
+                        'peça', 'peças' => 'bg-blue-50 text-blue-600',
                         default => 'bg-red-50 text-red-600',
                         };
                         @endphp
@@ -90,12 +92,12 @@
                     </td>
 
                     <td class="px-6 py-4 text-xs">
-                        @if(in_array(strtolower($item->categoria), ['insumos', 'toners', 'peças', 'peças de impressora']))
-                        <span class="text-slate-400 italic font-medium tracking-tight">Consumível / Sem Patrimônio</span>
+                        @if(in_array(strtolower($item->categoria ?? ''), ['insumo', 'insumos', 'toners', 'peça', 'peças']))
+                        <span class="text-slate-400 italic font-medium">Consumível / Qtd: {{ $item->quantidade_estoque }}</span>
                         @else
                         <div class="flex flex-col gap-0.5">
-                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Tombo:</strong> {{ $item->patrimonio ?? '---' }}</span>
-                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Série:</strong> {{ $item->numero_serie ?? '---' }}</span>
+                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Tombo:</strong> {{ $item->tombo ?? '---' }}</span>
+                            <span class="text-slate-600"><strong class="text-slate-400 uppercase text-[9px]">Série:</strong> {{ $item->serial ?? '---' }}</span>
                         </div>
                         @endif
                     </td>
@@ -112,10 +114,11 @@
                         <div class="flex items-center gap-2">
                             <i class="ph ph-map-pin {{ $item->quantidade_estoque > 0 ? 'text-emerald-400' : 'text-red-400' }}"></i>
                             <span class="text-sm font-bold text-slate-600">
-                                @php $ultimaMov = $item->requisicoes->first(); @endphp
-                                @if($item->quantidade_estoque > 0) Estoque Central
-                                @elseif($ultimaMov && $ultimaMov->cliente) {{ $ultimaMov->cliente->razao_social }}
-                                @else Destino não registrado @endif
+                                @if($item->quantidade_estoque > 0)
+                                Estoque Central
+                                @else
+                                {{ $item->requisicoes->first()?->cliente->razao_social ?? 'Destino não registrado' }}
+                                @endif
                             </span>
                         </div>
                     </td>
@@ -136,7 +139,7 @@
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-95"
         x-transition:enter-end="opacity-100 scale-100"
-        x-cloak>
+        style="display: none;" x-cloak>
 
         <div @click.away="openModal = false" class="bg-white rounded-3xl shadow-2xl max-w-xl w-full overflow-hidden flex flex-col max-h-[90vh]">
 
@@ -155,8 +158,8 @@
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Tipo do Item</label>
                     <div class="relative">
-                        <select x-model="categoriaSelecionada"
-                            class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm appearance-none transition-all">
+                        <select x-model="categoriaSelecionada" name="categoria"
+                            class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm appearance-none transition-all">
                             <option value="equipamento">Equipamento</option>
                             <option value="insumo">Insumo</option>
                             <option value="peça">Peça para Manutenção</option>
@@ -167,27 +170,27 @@
 
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Descrição do Item</label>
-                    <input type="text" x-model="novoItem.nome" placeholder="Ex: HP LaserJet M1132"
-                        class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm transition-all">
+                    <input type="text" x-model="novoItem.nome" name="nome" placeholder="Ex: HP LaserJet M1132"
+                        class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm transition-all">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div x-show="categoriaSelecionada === 'equipamento'" x-transition>
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Patrimônio / SN</label>
-                        <input type="text" x-model="novoItem.patrimonio"
+                        <input type="text" x-model="novoItem.patrimonio" name="tombo"
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
                     </div>
 
                     <div x-show="categoriaSelecionada !== 'equipamento'" x-transition>
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Quantidade</label>
-                        <input type="number" x-model="novoItem.quantidade" min="1"
+                        <input type="number" x-model="novoItem.quantidade" name="quantidade_estoque" min="1"
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
                     </div>
 
                     <div :class="categoriaSelecionada === 'equipamento' ? '' : 'col-span-1'">
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Almoxarifado</label>
                         <div class="relative">
-                            <select x-model="novoItem.estoque_id"
+                            <select x-model="novoItem.estoque_id" name="estoque_id"
                                 class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm appearance-none transition-all">
                                 <option value="">Selecione...</option>
                                 @foreach($estoques as $estoque)
@@ -223,8 +226,7 @@
 
                                 <input type="hidden" :name="'itens['+index+'][nome]'" :value="item.nome">
                                 <input type="hidden" :name="'itens['+index+'][categoria]'" :value="item.categoria">
-                                <input type="hidden" :name="'itens['+index+'][patrimonio]'" :value="item.patrimonio">
-                                <input type="hidden" :name="'itens['+index+'][quantidade_estoque]'" :value="item.quantidade">
+                                <input type="hidden" :name="'itens['+index+'][tombo]'" :value="item.tombo"> <input type="hidden" :name="'itens['+index+'][quantidade_estoque]'" :value="item.quantidade">
                                 <input type="hidden" :name="'itens['+index+'][estoque_id]'" :value="item.estoque_id">
                             </div>
                         </template>
@@ -243,6 +245,5 @@
             </form>
         </div>
     </div>
-</div>
 </div>
 @endsection

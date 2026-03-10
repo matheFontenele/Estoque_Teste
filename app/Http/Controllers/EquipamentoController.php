@@ -16,28 +16,26 @@ class EquipamentoController extends Controller
     {
         $search = $request->input('search');
 
-        // 1. Busca os equipamentos com o filtro
         $equipamentos = Equipamento::query()
             ->with(['requisicoes' => function ($q) {
                 $q->latest()->with('cliente');
             }])
             ->when($search, function ($query, $search) {
                 return $query->where('nome', 'like', "%{$search}%")
-                    ->orWhere('patrimonio', 'like', "%{$search}%")
+                    ->orWhere('tombo', 'like', "%{$search}%") // Corrigido para tombo
                     ->orWhere('categoria', 'like', "%{$search}%");
             })
+            ->latest() // Traz os mais novos primeiro
             ->get();
-        // 2. Busca a lista de estoques/unidades para o Modal de cadastro
+
         $estoques = Estoque::all();
 
-        // 3. Organiza as estatísticas para os cards
         $stats = [
             'total_equipamentos' => Equipamento::count(),
             'disponivel'         => Equipamento::where('quantidade_estoque', '>', 0)->count(),
             'alocado'            => \App\Models\Requisicao::count(),
         ];
 
-        // 4. Envia tudo para a View
         return view('equipamentos.index', compact('equipamentos', 'stats', 'estoques'));
     }
 
@@ -46,17 +44,37 @@ class EquipamentoController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nome' => 'required|string|max:255',
-            'tombo' => 'required|string|unique:equipamentos,tombo', // Corrigido aqui
-            'quantidade_estoque' => 'required|integer|min:0',
-            'estoque_id' => 'required|exists:estoques,id',
-            'situacao' => 'required|string'
-        ]);
+        // 1. Se vierem itens da fila (múltiplos)
+        if ($request->has('itens')) {
+            foreach ($request->itens as $item) {
+                \App\Models\Equipamento::create([
+                    'nome'               => $item['nome'],
+                    'categoria'          => $item['categoria'],
+                    'tombo'              => $item['tombo'], // Alterado de patrimonio para tombo
+                    'quantidade_estoque' => $item['quantidade_estoque'] ?? 1,
+                    'estoque_id'         => $item['estoque_id'],
+                    'situacao'           => 'disponivel',
+                ]);
+            }
+        }
+        // 2. Se for um cadastro único (clicou em salvar sem adicionar à fila)
+        else {
+            $request->validate([
+                'nome' => 'required|string|max:255',
+                'estoque_id' => 'required|exists:estoques,id',
+            ]);
 
-        \App\Models\Equipamento::create($request->all());
+            \App\Models\Equipamento::create([
+                'nome'               => $request->nome,
+                'categoria'          => $request->categoria ?? 'equipamento',
+                'tombo'              => $request->tombo, // Alterado de patrimonio para tombo
+                'quantidade_estoque' => $request->quantidade_estoque ?? 1,
+                'estoque_id'         => $request->estoque_id,
+                'situacao'           => 'disponivel',
+            ]);
+        }
 
-        return redirect()->route('equipamentos.index')->with('success', 'Item cadastrado com sucesso!');
+        return redirect()->route('equipamentos.index')->with('success', 'Itens cadastrados com sucesso!');
     }
     /**
      * Apresentar detalhes dos itens
