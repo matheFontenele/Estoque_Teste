@@ -50,7 +50,8 @@ class EquipamentoController extends Controller
                 \App\Models\Equipamento::create([
                     'nome'               => $item['nome'],
                     'categoria'          => $item['categoria'],
-                    'tombo'              => $item['tombo'], // Alterado de patrimonio para tombo
+                    'tombo'              => $item['tombo'],
+                    'serial'             => $item['serial'] ?? null,
                     'quantidade_estoque' => $item['quantidade_estoque'] ?? 1,
                     'estoque_id'         => $item['estoque_id'],
                     'situacao'           => 'disponivel',
@@ -62,12 +63,14 @@ class EquipamentoController extends Controller
             $request->validate([
                 'nome' => 'required|string|max:255',
                 'estoque_id' => 'required|exists:estoques,id',
+                'tombo' => 'nullable|unique:equipamentos,tombo',
             ]);
 
             \App\Models\Equipamento::create([
                 'nome'               => $request->nome,
                 'categoria'          => $request->categoria ?? 'equipamento',
-                'tombo'              => $request->tombo, // Alterado de patrimonio para tombo
+                'tombo'              => $request->tombo,
+                'serial'             => $request->serial ?? null,
                 'quantidade_estoque' => $request->quantidade_estoque ?? 1,
                 'estoque_id'         => $request->estoque_id,
                 'situacao'           => 'disponivel',

@@ -10,6 +10,7 @@
     novoItem: {
         nome: '',
         patrimonio: '',
+        serial: '',
         quantidade: 1,
         estoque_id: '',
         situacao: 'disponivel'
@@ -31,6 +32,7 @@ adicionarAFila() {
 
     this.novoItem.nome = '';
     this.novoItem.patrimonio = '';
+    this.novoItem.serial = '';
     this.novoItem.quantidade = 1;
 },
     removerDaFila(index) {
@@ -173,11 +175,19 @@ adicionarAFila() {
                     <input type="text" x-model="novoItem.nome" name="nome" placeholder="Ex: HP LaserJet M1132"
                         class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm transition-all">
                 </div>
+                <!--Caso seja um insumo ou peça-->
 
                 <div class="grid grid-cols-2 gap-4">
+
                     <div x-show="categoriaSelecionada === 'equipamento'" x-transition>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Patrimônio / SN</label>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Patrimônio / Tombo</label>
                         <input type="text" x-model="novoItem.patrimonio" name="tombo"
+                            class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
+                    </div>
+
+                    <div x-show="categoriaSelecionada === 'equipamento'" x-transition>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Número de Série</label>
+                        <input type="text" x-model="novoItem.serial" name="serial"
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
                     </div>
 
@@ -187,18 +197,15 @@ adicionarAFila() {
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
                     </div>
 
-                    <div :class="categoriaSelecionada === 'equipamento' ? '' : 'col-span-1'">
+                    <div class="col-span-2 md:col-span-1">
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Almoxarifado</label>
-                        <div class="relative">
-                            <select x-model="novoItem.estoque_id" name="estoque_id"
-                                class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm appearance-none transition-all">
-                                <option value="">Selecione...</option>
-                                @foreach($estoques as $estoque)
-                                <option value="{{ $estoque->id }}">{{ $estoque->nome }}</option>
-                                @endforeach
-                            </select>
-                            <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                        </div>
+                        <select x-model="novoItem.estoque_id" name="estoque_id"
+                            class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm appearance-none">
+                            <option value="">Selecione...</option>
+                            @foreach($estoques as $estoque)
+                            <option value="{{ $estoque->id }}">{{ $estoque->nome }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
