@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipamento;
+use App\Models\Requisicao;
 use App\Models\Estoque;
 
 class EquipamentoController extends Controller
@@ -11,21 +12,31 @@ class EquipamentoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Pegamos todos os equipamentos e todos os estoques
-        $equipamentos = \App\Models\Equipamento::with('estoque')->get();
-        $estoques = \App\Models\Estoque::all();
+        $search = $request->input('search');
 
-        // Criamos o array de estatísticas que a View está pedindo
+        // 1. Busca os equipamentos com o filtro
+        $equipamentos = Equipamento::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('nome', 'like', "%{$search}%")
+                    ->orWhere('patrimonio', 'like', "%{$search}%");
+            })
+            ->orderBy('nome', 'asc')
+            ->get();
+
+        // 2. Busca a lista de estoques/unidades para o Modal de cadastro
+        $estoques = Estoque::all();
+
+        // 3. Organiza as estatísticas para os cards
         $stats = [
-            'total_equipamentos' => $equipamentos->count(),
-            'disponivel' => $equipamentos->where('situacao', 'disponivel')->count(),
-            'alocado' => $equipamentos->where('situacao', 'alocado')->count(),
+            'total_equipamentos' => Equipamento::count(),
+            'disponivel'         => Equipamento::where('quantidade_estoque', '>', 0)->count(),
+            'alocado'            => \App\Models\Requisicao::count(),
         ];
 
-        // Passamos tudo para a view
-        return view('equipamentos.index', compact('equipamentos', 'estoques', 'stats'));
+        // 4. Envia tudo para a View
+        return view('equipamentos.index', compact('equipamentos', 'stats', 'estoques'));
     }
 
     /**
@@ -44,6 +55,20 @@ class EquipamentoController extends Controller
         \App\Models\Equipamento::create($request->all());
 
         return redirect()->route('equipamentos.index')->with('success', 'Item cadastrado com sucesso!');
+    }
+    /**
+     * Apresentar detalhes dos itens
+     */
+
+    public function show($id)
+    {
+        // Carrega o equipamento e o histórico de requisições (para saber onde ele está)
+        $equipamento = Equipamento::with(['requisicoes.cliente'])->findOrFail($id);
+
+        // Pegamos a última movimentação para saber o local atual e a data
+        $ultimaMovimentacao = $equipamento->requisicoes()->latest()->first();
+
+        return view('equipamentos.show', compact('equipamento', 'ultimaMovimentacao'));
     }
 
     /**

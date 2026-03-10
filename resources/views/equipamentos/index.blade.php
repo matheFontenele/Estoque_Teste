@@ -23,6 +23,17 @@
             Novo Item
         </button>
     </div>
+    <!--Campo de busca-->
+    <form action="{{ route('equipamentos.index') }}" method="GET" class="relative w-full max-w-md mb-6">
+        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Pesquisar por nome ou patrimônio..."
+            class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none transition-all shadow-sm">
+    </form>
+
 
     <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
         <table class="w-full text-left border-collapse">
@@ -58,12 +69,13 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <form action="{{ route('equipamentos.destroy', $equipamento->id) }}" method="POST" onsubmit="return confirm('Excluir este equipamento?');">
-                            @csrf @method('DELETE')
-                            <button class="p-2 text-slate-400 hover:text-red-600 transition-colors">
-                                <i class="ph ph-trash text-xl"></i>
-                            </button>
-                        </form>
+                    <td class="px-6 py-4 flex justify-end gap-3">
+                        <a href="{{ route('equipamentos.show', $equipamento->id) }}"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            title="Detalhes">
+                            <i class="ph ph-eye text-lg font-bold"></i>
+                        </a>
+                    </td>
                     </td>
                 </tr>
                 @empty
@@ -95,6 +107,16 @@
             <form action="{{ route('equipamentos.store') }}" method="POST" class="p-8 space-y-5">
                 @csrf
 
+
+                <form action="{{ route('equipamentos.index') }}" method="GET" class="relative w-full max-w-md mb-8">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Buscar por nome ou patrimônio..."
+                        class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all shadow-sm">
+                </form>
                 <div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2 ml-1">Descrição do Item</label>
                     <input type="text" name="nome" required placeholder="Ex: Notebook Dell Latitude"

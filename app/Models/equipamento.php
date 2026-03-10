@@ -19,4 +19,9 @@ class Equipamento extends Model
     {
         return $this->belongsTo(Estoque::class);
     }
+
+    // Historico de requisoções
+    public function requisicoes() {
+    return $this->hasMany(Requisicao::class);
+}
 }
