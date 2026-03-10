@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class RequisicaoController extends Controller
 {
-    /**
-     * Lista todas as requisições
-     */
     public function index()
     {
         $requisicoes = Requisicao::with(['cliente', 'equipamento', 'user'])
@@ -23,23 +20,14 @@ class RequisicaoController extends Controller
         return view('requisicoes.index', compact('requisicoes'));
     }
 
-    /**
-     * Exibe o Dashboard (Home)
-     */
-    public function dashboard()
+    public function create()
     {
-        $stats = [
-            'total_equipamentos' => Equipamento::sum('quantidade_estoque'),
-            'total_clientes' => Cliente::count(),
-            'estoque_baixo' => Equipamento::where('quantidade_estoque', '<', 5)->count(),
-            'requisicoes_recentes' => Requisicao::with(['cliente', 'equipamento'])
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get(),
-            'total_requisicoes' => Requisicao::count(),
-        ];
+        // IMPORTANTE: Verifique se existem registros nestas tabelas no banco
+        $usuarios = User::all();
+        $clientes = Cliente::all();
+        $equipamentos = Equipamento::where('quantidade_estoque', '>', 0)->get();
 
-        return view('dashboard', compact('stats'));
+        return view('requisicoes.create', compact('usuarios', 'clientes', 'equipamentos'));
     }
 
     public function store(Request $request)
@@ -52,7 +40,9 @@ class RequisicaoController extends Controller
             'envio'            => 'required',
             'etiqueta'         => 'required',
             'data_solicitacao' => 'required|date',
-            'previsao'         => 'required|date', // Mudamos para required para evitar o erro de campo vazio
+            'previsao'         => 'required|date',
+            'estado'           => 'required',
+            'cidade'           => 'required',
         ]);
 
         try {
@@ -67,20 +57,17 @@ class RequisicaoController extends Controller
             $equipamento->decrement('quantidade_estoque', $request->quantidade);
 
             $requisicao = new Requisicao();
-            $requisicao->cliente_id         = $request->cliente_id;
-            $requisicao->equipamento_id     = $request->equipamento_id;
-            $requisicao->user_id            = $request->user_id;
-            $requisicao->quantidade         = $request->quantidade;
-            $requisicao->envio              = $request->envio;
-            $requisicao->etiqueta           = $request->etiqueta;
-            $requisicao->estado             = $request->estado;
-            $requisicao->cidade             = $request->cidade;
-            
-            // AQUI O AJUSTE: Preenchemos as duas colunas com o mesmo valor
-            $requisicao->data_prevista      = $request->previsao; 
-            $requisicao->previsao           = $request->previsao; // <--- Adicione esta linha
-            
-            $requisicao->is_substituicao    = $request->is_substituicao ?? 0;
+            $requisicao->cliente_id          = $request->cliente_id;
+            $requisicao->equipamento_id      = $request->equipamento_id;
+            $requisicao->user_id             = $request->user_id;
+            $requisicao->quantidade          = $request->quantidade;
+            $requisicao->envio               = $request->envio;
+            $requisicao->etiqueta            = $request->etiqueta;
+            $requisicao->estado              = $request->estado;
+            $requisicao->cidade              = $request->cidade;
+            $requisicao->data_prevista       = $request->previsao;
+            $requisicao->previsao            = $request->previsao;
+            $requisicao->is_substituicao     = $request->is_substituicao ?? 0;
             $requisicao->patrimonio_anterior = $request->patrimonio_anterior;
             $requisicao->save();
 
@@ -91,14 +78,5 @@ class RequisicaoController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Erro: ' . $e->getMessage()])->withInput();
         }
-    }
-
-    public function create()
-    {
-        $usuarios = User::all();
-        $clientes = Cliente::all();
-        $equipamentos = Equipamento::where('quantidade_estoque', '>', 0)->get();
-
-        return view('requisicoes.create', compact('usuarios', 'clientes', 'equipamentos'));
     }
 }
