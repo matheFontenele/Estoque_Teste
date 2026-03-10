@@ -117,7 +117,7 @@ adicionarAFila() {
                             <i class="ph ph-map-pin {{ $item->quantidade_estoque > 0 ? 'text-emerald-400' : 'text-red-400' }}"></i>
                             <span class="text-sm font-bold text-slate-600">
                                 @if($item->quantidade_estoque > 0)
-                                Estoque Central
+                                {{ $item->estoque->nome ?? 'Estoque Central' }} {{-- Altere aqui para mostrar o nome real do banco --}}
                                 @else
                                 {{ $item->requisicoes->first()?->cliente->razao_social ?? 'Destino não registrado' }}
                                 @endif
@@ -196,10 +196,9 @@ adicionarAFila() {
                         <input type="number" x-model="novoItem.quantidade" name="quantidade_estoque" min="1"
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm">
                     </div>
-
                     <div class="col-span-2 md:col-span-1">
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Almoxarifado</label>
-                        <select x-model="novoItem.estoque_id" name="estoque_id"
+                        <select x-model="novoItem.estoque_id" name="estoque_id" required
                             class="w-full rounded-2xl border-slate-100 bg-slate-50 p-4 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-red-500/20 shadow-sm appearance-none">
                             <option value="">Selecione...</option>
                             @foreach($estoques as $estoque)
@@ -207,48 +206,47 @@ adicionarAFila() {
                             @endforeach
                         </select>
                     </div>
-                </div>
 
-                <button type="button" @click="adicionarAFila()"
-                    class="w-full py-4 rounded-2xl border-2 border-dashed border-red-200 bg-red-50/30 text-red-500 font-bold hover:bg-red-50 hover:border-red-500 transition-all flex items-center justify-center gap-2 group">
-                    <i class="ph ph-plus-square text-xl group-hover:scale-110 transition-transform"></i>
-                    Acrescentar outro na lista
-                </button>
+                    <button type="button" @click="adicionarAFila()"
+                        class="w-full py-4 rounded-2xl border-2 border-dashed border-red-200 bg-red-50/30 text-red-500 font-bold hover:bg-red-50 hover:border-red-500 transition-all flex items-center justify-center gap-2 group">
+                        <i class="ph ph-plus-square text-xl group-hover:scale-110 transition-transform"></i>
+                        Acrescentar outro na lista
+                    </button>
 
-                <div x-show="filaItens.length > 0" x-transition class="pt-2">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 ml-1 tracking-widest">Itens para Salvar</label>
-                    <div class="space-y-3 max-h-52 overflow-y-auto pr-2 custom-scrollbar">
-                        <template x-for="(item, index) in filaItens" :key="index">
-                            <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-all">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-black text-slate-700" x-text="item.nome"></span>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[9px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-black uppercase" x-text="item.categoria"></span>
-                                        <span class="text-[10px] text-slate-400 font-bold" x-text="item.patrimonio ? 'SN: ' + item.patrimonio : 'QTD: ' + item.quantidade"></span>
+                    <div x-show="filaItens.length > 0" x-transition class="pt-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 ml-1 tracking-widest">Itens para Salvar</label>
+                        <div class="space-y-3 max-h-52 overflow-y-auto pr-2 custom-scrollbar">
+                            <template x-for="(item, index) in filaItens" :key="index">
+                                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition-all">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-black text-slate-700" x-text="item.nome"></span>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span class="text-[9px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-black uppercase" x-text="item.categoria"></span>
+                                            <span class="text-[10px] text-slate-400 font-bold" x-text="item.patrimonio ? 'SN: ' + item.patrimonio : 'QTD: ' + item.quantidade"></span>
+                                        </div>
                                     </div>
+                                    <button type="button" @click="removerDaFila(index)" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                                        <i class="ph ph-trash-simple font-bold"></i>
+                                    </button>
+
+                                    <input type="hidden" :name="'itens['+index+'][nome]'" :value="item.nome">
+                                    <input type="hidden" :name="'itens['+index+'][categoria]'" :value="item.categoria">
+                                    <input type="hidden" :name="'itens['+index+'][tombo]'" :value="item.tombo"> <input type="hidden" :name="'itens['+index+'][quantidade_estoque]'" :value="item.quantidade">
+                                    <input type="hidden" :name="'itens['+index+'][estoque_id]'" :value="item.estoque_id">
                                 </div>
-                                <button type="button" @click="removerDaFila(index)" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all">
-                                    <i class="ph ph-trash-simple font-bold"></i>
-                                </button>
-
-                                <input type="hidden" :name="'itens['+index+'][nome]'" :value="item.nome">
-                                <input type="hidden" :name="'itens['+index+'][categoria]'" :value="item.categoria">
-                                <input type="hidden" :name="'itens['+index+'][tombo]'" :value="item.tombo"> <input type="hidden" :name="'itens['+index+'][quantidade_estoque]'" :value="item.quantidade">
-                                <input type="hidden" :name="'itens['+index+'][estoque_id]'" :value="item.estoque_id">
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex gap-4 pt-4 sticky bottom-0 bg-white">
-                    <button type="button" @click="openModal = false" class="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 rounded-2xl transition-all">
-                        Cancelar
-                    </button>
-                    <button type="submit" :disabled="filaItens.length === 0 && !novoItem.nome"
-                        class="flex-[2] py-4 font-black text-white bg-red-600 rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale">
-                        Finalizar e Salvar <span x-show="filaItens.length > 0" x-text="'(' + filaItens.length + ')'"></span>
-                    </button>
-                </div>
+                    <div class="flex gap-4 pt-4 sticky bottom-0 bg-white">
+                        <button type="button" @click="openModal = false" class="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 rounded-2xl transition-all">
+                            Cancelar
+                        </button>
+                        <button type="submit" :disabled="filaItens.length === 0 && !novoItem.nome"
+                            class="flex-[2] py-4 font-black text-white bg-red-600 rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale">
+                            Finalizar e Salvar <span x-show="filaItens.length > 0" x-text="'(' + filaItens.length + ')'"></span>
+                        </button>
+                    </div>
             </form>
         </div>
     </div>
