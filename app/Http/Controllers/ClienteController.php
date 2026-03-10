@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -43,9 +44,11 @@ class ClienteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Cliente $cliente)
     {
-        //
+        // Carrega o cliente junto com a lista de equipamentos vinculados
+        $cliente->load('equipamentos');
+        return view('clientes.show', compact('cliente'));
     }
 
     /**

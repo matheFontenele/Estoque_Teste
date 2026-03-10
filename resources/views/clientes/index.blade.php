@@ -35,12 +35,12 @@
                             {{ $cliente->cidade }} - {{ $cliente->estado }}
                         </span>
                     </td>
-
                     <td class="px-6 py-4 text-right flex justify-end gap-2">
-                        <button class="p-2 text-slate-400 hover:text-blue-600 transition-colors">
-                            <i class="ph ph-pencil-simple text-xl"></i>
-                        </button>
-                        <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" onsubmit="return confirm('Excluir cliente?')">
+                        <a href="{{ route('clientes.show', $cliente->id) }}" class="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                            <i class="ph ph-eye text-xl"></i>
+                        </a>
+
+                        <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" onsubmit="return confirm('Deseja excluir este cliente?');">
                             @csrf @method('DELETE')
                             <button class="p-2 text-slate-400 hover:text-red-600 transition-colors">
                                 <i class="ph ph-trash text-xl"></i>

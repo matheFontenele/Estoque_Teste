@@ -15,3 +15,6 @@ Route::resource('equipamentos', EquipamentoController::class);
 // Rotas de estoque
 Route::get('/estoque', [EstoqueController::class, 'index'])->name('estoque.index');
 Route::post('/estoque/update', [EstoqueController::class, 'update'])->name('estoque.update');
+
+//Rotas para informações de clientes
+Route::get('/clientes/{cliente}', [App\Http\Controllers\ClienteController::class, 'show'])->name('clientes.show');

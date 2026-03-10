@@ -22,28 +22,28 @@ class DatabaseSeeder extends Seeder
 
         // 2. Criar Diferentes Estoques (Unidades)
         $estoqueFortaleza = Estoque::create([
-            'nome' => 'Almoxarifado Central',
+            'nome' => 'Alucom Base',
             'localizacao' => 'Fortaleza - CE'
         ]);
 
         $estoqueSaoPaulo = Estoque::create([
-            'nome' => 'Unidade Logística Sudeste',
-            'localizacao' => 'São Paulo - SP'
+            'nome' => 'Filial Santa Catarina',
+            'localizacao' => 'Florianopolis - SC'
         ]);
 
         // 3. Criar Clientes (Conforme a nova estrutura de CNPJ)
         $clientes = [
             [
-                'nome' => 'Supermercado Alvorada',
+                'nome' => 'HUAC - Hospital Universitario Alcides Carneiro',
                 'cnpj' => '12.345.678/0001-00',
-                'estado' => 'CE',
-                'cidade' => 'Fortaleza'
+                'estado' => 'PB',
+                'cidade' => 'Campina Grande'
             ],
             [
-                'nome' => 'Posto São João',
+                'nome' => 'Comando da Aeronautica',
                 'cnpj' => '98.765.432/0001-99',
-                'estado' => 'SP',
-                'cidade' => 'São Paulo'
+                'estado' => 'DF',
+                'cidade' => 'Brasilia'
             ],
         ];
 
@@ -54,26 +54,29 @@ class DatabaseSeeder extends Seeder
         // 4. Criar Equipamentos vinculados aos Estoques específicos
         $equipamentos = [
             [
-                'nome' => 'Notebook Dell Latitude',
-                'tombo' => 'DELL-001',
+                'nome' => 'MICRO',
+                'tombo' => 86745,
+                'serial' => 'WDAS56455',
                 'quantidade_estoque' => 15,
                 'situacao' => 'disponivel',
                 'cor' => 'N/A',
-                'descricao' => 'Processador i5, 8GB RAM',
+                'descricao' => 'I7, 8GB RAM, SSD 240GB',
                 'estoque_id' => $estoqueFortaleza->id
             ], // <-- Verifique se tem essa vírgula e colchete
             [
-                'nome' => 'Impressora HP Laserjet',
-                'tombo' => 'HP-500',
+                'nome' => 'MULTIFUNCIONAL',
+                'tombo' => 88769,
+                'serial' => 'WDAS56485',
                 'quantidade_estoque' => 3,
                 'situacao' => 'disponivel',
-                'cor' => 'Preto',
-                'descricao' => 'Impressora de rede',
+                'cor' => 'N/A',
+                'descricao' => 'MONO KYOCERA ECOSYS MA5500IFX',
                 'estoque_id' => $estoqueFortaleza->id
             ],
             [
                 'nome' => 'Roteador Mikrotik RB4011',
-                'tombo' => 'MK-102',
+                'tombo' => 72548,
+                'serial' => 'WDAS56445',
                 'quantidade_estoque' => 8,
                 'situacao' => 'disponivel',
                 'cor' => 'N/A',
@@ -82,7 +85,8 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'nome' => 'Monitor Samsung 24"',
-                'tombo' => 'SAM-99',
+                'tombo' => 32545,
+                'serial' => 'WDAS55855',
                 'quantidade_estoque' => 5,
                 'situacao' => 'disponivel',
                 'cor' => 'Preto',

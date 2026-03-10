@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('equipamentos', function (Blueprint $table) {
             $table->id();
-            $table->string('tombo')->unique(); // Este será o seu "Patrimônio"
+            $table->integer('tombo')->unique();
             $table->string('nome');
-            $table->string('serie')->nullable()->unique();
+            $table->string('serial')->nullable()->unique();
             $table->enum('cor', ['Preto', 'Amarelo', 'Ciano', 'Magenta', 'N/A'])->default('N/A');
             $table->integer('quantidade_estoque')->default(0);
             $table->text('descricao')->nullable(); // Adicionado nullable para não dar erro se estiver vazio

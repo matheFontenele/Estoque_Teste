@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Equipamento extends Model
 {
-    protected $fillable = ['nome', 'tombo', 'quantidade_estoque', 'situacao', 'estoque_id'];
+    protected $fillable = ['nome', 'tombo', 'serial', 'quantidade_estoque', 'situacao', 'estoque_id'];
 
     // O equipamento está em um cliente (quando alocado)
     public function cliente()
