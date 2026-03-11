@@ -55,50 +55,37 @@ class RequisicaoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'cliente_id'       => 'required|exists:clientes,id',
-            'equipamento_id'   => 'required|exists:equipamentos,id',
-            'quantidade'       => 'required|integer|min:1',
-            'user_id'          => 'required|exists:users,id',
-            'envio'            => 'required',
-            'etiqueta'         => 'required',
+            'user_id' => 'required|exists:users,id',
+            'cliente_id' => 'required|exists:clientes,id',
+            'equipamento_nome' => 'required|string',
             'data_solicitacao' => 'required|date',
-            'previsao'         => 'required|date',
-            'estado'           => 'required',
-            'cidade'           => 'required',
+            'previsao' => 'required|date',
+            'quantidade' => 'required|integer|min:1',
+            'envio' => 'required|string',
+            'etiqueta' => 'required|string',
+            'is_substituicao' => 'required|boolean',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $equipamento = \App\Models\Equipamento::where('nome', $request->equipamento_nome)->first();
+        $cliente = \App\Models\Cliente::find($request->cliente_id);
 
-            $equipamento = Equipamento::findOrFail($request->equipamento_id);
+        \App\Models\Requisicao::create([
+            'user_id' => $request->user_id,
+            'cliente_id' => $request->cliente_id,
+            'equipamento_id' => $equipamento ? $equipamento->id : null,
+            'data_solicitacao' => $request->data_solicitacao,
+            'data_prevista' => $request->previsao,
+            'quantidade' => $request->quantidade,
+            'envio' => $request->envio,
+            // Segurança: Se o form enviar nulo, pegamos do cadastro do cliente
+            'estado' => $request->estado ?? $cliente->estado,
+            'cidade' => $request->cidade ?? $cliente->cidade,
+            'etiqueta' => $request->etiqueta,
+            'is_substituicao' => $request->is_substituicao,
+            'patrimonio_anterior' => $request->patrimonio_anterior,
+            'situacao' => 'Pendente', // Forçamos o início como Pendente
+        ]);
 
-            if ($equipamento->quantidade_estoque < $request->quantidade) {
-                return back()->withErrors(['quantidade' => 'Estoque insuficiente.'])->withInput();
-            }
-
-            $equipamento->decrement('quantidade_estoque', $request->quantidade);
-
-            $requisicao = new Requisicao();
-            $requisicao->cliente_id          = $request->cliente_id;
-            $requisicao->equipamento_id      = $request->equipamento_id;
-            $requisicao->user_id             = $request->user_id;
-            $requisicao->quantidade          = $request->quantidade;
-            $requisicao->envio               = $request->envio;
-            $requisicao->etiqueta            = $request->etiqueta;
-            $requisicao->estado              = $request->estado;
-            $requisicao->cidade              = $request->cidade;
-            $requisicao->data_prevista       = $request->previsao;
-            $requisicao->previsao            = $request->previsao;
-            $requisicao->is_substituicao     = $request->is_substituicao ?? 0;
-            $requisicao->patrimonio_anterior = $request->patrimonio_anterior;
-            $requisicao->save();
-
-            DB::commit();
-
-            return redirect()->route('requisicoes.index')->with('success', 'Requisição gerada com sucesso!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => 'Erro: ' . $e->getMessage()])->withInput();
-        }
+        return redirect()->route('requisicoes.index')->with('success', 'Requisição gravada com sucesso!');
     }
 }

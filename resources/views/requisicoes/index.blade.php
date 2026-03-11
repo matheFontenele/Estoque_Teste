@@ -13,44 +13,45 @@
 </div>
 
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-    <table class="w-full text-left border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-200">
+    <table class="w-full text-sm text-left text-slate-500">
+        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
             <tr>
-                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente / Destino</th>
-                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Equipamento</th>
-                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Etiqueta</th>
-                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Data Prevista</th>
-                <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ações</th>
+                <th class="px-6 py-3">ID</th>
+                <th class="px-6 py-3">Solicitação</th>
+                <th class="px-6 py-3">Envio</th>
+                <th class="px-6 py-3">Cliente</th>
+                <th class="px-6 py-3">Item</th>
+                <th class="px-6 py-3 text-center">Situação</th>
+                <th class="px-6 py-3">Ações</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody>
             @foreach($requisicoes as $req)
-            <tr class="hover:bg-slate-50/50 transition">
-                <td class="p-4">
-                    <div class="font-semibold text-slate-700">{{ $req->cliente->nome }}</div>
-                    <div class="text-xs text-slate-400 capitalize">{{ $req->tipo }}</div>
+            <tr class="bg-white border-b hover:bg-slate-50">
+                <td class="px-6 py-4 font-bold">#{{ $req->numero_requisicao }}</td>
+                <td class="px-6 py-4">{{ $req->data_solicitacao->format('d/m/Y') }}</td>
+                <td class="px-6 py-4">{{ $req->envio }}</td>
+                <td class="px-6 py-4">{{ $req->cliente->nome }}</td>
+                <td class="px-6 py-4 font-semibold text-slate-700">
+                    {{ $req->equipamento->nome ?? 'N/A' }}
                 </td>
-                <td class="p-4 text-slate-600 text-sm">
-                    <code class="bg-slate-100 px-2 py-1 rounded text-blue-600 font-mono">{{ $req->equipamento->tombo ?? 'N/A' }}</code>
-                </td>
-                <td class="p-4">
+                <td class="px-6 py-4 text-center">
                     @php
-                        $colors = [
-                            'ZapLoc' => 'bg-green-100 text-green-700 border-green-200',
-                            'Moreia' => 'bg-purple-100 text-purple-700 border-purple-200',
-                            'Alucom' => 'bg-orange-100 text-orange-700 border-orange-200',
-                        ];
-                        $badgeClass = $colors[$req->etiqueta] ?? 'bg-slate-100 text-slate-600';
+                    $badgeStyle = match($req->situacao) {
+                    'Atendida' => 'bg-green-100 text-green-700 border-green-200',
+                    'Parcial' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                    'Sem Estoque' => 'bg-orange-100 text-orange-700 border-orange-200',
+                    'Cancelada' => 'bg-red-100 text-red-700 border-red-200',
+                    'Pendente' => 'bg-slate-100 text-slate-700 border-slate-200',
+                    default => 'bg-gray-100 text-gray-700'
+                    };
                     @endphp
-                    <span class="{{ $badgeClass }} border px-3 py-1 rounded-full text-xs font-bold">
-                        {{ $req->etiqueta }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $badgeStyle }}">
+                        {{ $req->situacao }}
                     </span>
                 </td>
-                <td class="p-4 text-sm text-slate-500 italic">
-                    {{ \Carbon\Carbon::parse($req->data_prevista)->diffForHumans() }}
-                </td>
-                <td class="p-4 text-right">
-                    <button class="text-slate-400 hover:text-blue-600 transition p-2">
+                <td class="px-6 py-4">
+                    <button class="text-slate-400 hover:text-red-600">
                         <i class="ph ph-printer text-xl"></i>
                     </button>
                 </td>

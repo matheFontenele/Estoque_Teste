@@ -12,24 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('requisicaos', function (Blueprint $table) {
-            $table->id('numero_requisicao');
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('cliente_id')->constrained('clientes');
-            $table->foreignId('equipamento_id')->constrained('equipamentos');
+            $table->id('numero_requisicao'); //
+            $table->foreignId('user_id')->constrained('users'); //
+            $table->foreignId('cliente_id')->constrained('clientes'); //
+            $table->foreignId('equipamento_id')->constrained('equipamentos'); //
 
-            $table->date('data_solicitacao')->default(now());
-            $table->date('data_prevista')->nullable();
+            $table->date('data_solicitacao')->default(now()); //
+            $table->date('data_prevista')->nullable(); //
 
-            $table->enum('envio', ['Rota', 'Transportadora', 'Correios']);
-            $table->string('estado');
-            $table->string('cidade');
-            $table->enum('etiqueta', ['Alucom', 'Moreia', 'ZapLoc']);
+            $table->enum('envio', ['Rota', 'Transportadora', 'Correios']); //
+            $table->string('estado'); //
+            $table->string('cidade'); //
+            $table->enum('etiqueta', ['Alucom', 'Moreia', 'ZapLoc']); //
 
-            $table->integer('quantidade')->default(1);
-            $table->boolean('is_substituicao')->default(false);
-            $table->string('patrimonio_anterior')->nullable();
+            $table->integer('quantidade')->default(1); //
+            $table->boolean('is_substituicao')->default(false); //
+            $table->string('patrimonio_anterior')->nullable(); //
 
-            $table->timestamps();
+            $table->enum('situacao', ['Atendida', 'Parcial', 'Sem Estoque', 'Cancelada', 'Pendente'])
+                ->default('Pendente');
+
+            $table->timestamps(); 
         });
     }
 

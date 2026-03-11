@@ -19,7 +19,7 @@
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-6">
         <ul class="list-disc list-inside text-sm font-bold">
             @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
+            <li>{{ $error }}</li>
             @endforeach
         </ul>
     </div>
@@ -40,7 +40,7 @@
                     <label class="block text-xs font-black text-slate-700 uppercase">Solicitado por</label>
                     <select name="user_id" class="w-full rounded-xl border-slate-200">
                         @foreach($usuarios as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -57,17 +57,17 @@
 
                 <div class="md:col-span-2 space-y-1">
                     <label class="block text-xs font-black text-slate-700 uppercase tracking-widest">Cliente</label>
-                    <select name="cliente_id" 
-                            @change="preencherLocalizacao($event)"
-                            required
-                            class="w-full rounded-xl border-slate-200 bg-white p-3 font-bold text-slate-700 focus:ring-red-500">
+                    <select name="cliente_id"
+                        @change="preencherLocalizacao($event)"
+                        required
+                        class="w-full rounded-xl border-slate-200 bg-white p-3 font-bold text-slate-700 focus:ring-red-500">
                         <option value="">Selecione o Cliente...</option>
                         @foreach($clientes as $cliente)
-                            <option value="{{ $cliente->id }}" 
-                                    data-estado="{{ $cliente->estado }}" 
-                                    data-cidade="{{ $cliente->cidade }}">
-                                {{ $cliente->nome }}
-                            </option>
+                        <option value="{{ $cliente->id }}"
+                            data-estado="{{ $cliente->estado }}"
+                            data-cidade="{{ $cliente->cidade }}">
+                            {{ $cliente->nome }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -85,14 +85,21 @@
 
                 <div class="md:col-span-2 space-y-1">
                     <label class="block text-xs font-black text-slate-700 uppercase">Equipamento | Insumo</label>
-                    <select name="equipamento_id" required class="w-full rounded-xl border-slate-200 font-bold">
-                        <option value="">Selecione o Item...</option>
+
+                    <input type="text"
+                        name="equipamento_nome"
+                        list="itens-list"
+                        required
+                        placeholder="Digite o nome ou selecione um item..."
+                        class="w-full rounded-xl border-slate-200 font-bold p-3 focus:ring-red-500">
+
+                    <datalist id="itens-list">
                         @foreach($equipamentos as $equipamento)
-                            <option value="{{ $equipamento->id }}">
-                                {{ $equipamento->tombo ?? 'S/T' }} - {{ $equipamento->nome }} (Estoque: {{ $equipamento->quantidade_estoque }})
-                            </option>
+                        <option value="{{ $equipamento->nome }}">
+                            {{ $equipamento->tombo ?? 'S/T' }} - (Estoque: {{ $equipamento->quantidade_estoque }})
+                        </option>
                         @endforeach
-                    </select>
+                    </datalist>
                 </div>
 
                 <div class="space-y-1">
@@ -147,5 +154,9 @@
     </form>
 </div>
 
-<style> [x-cloak] { display: none !important; } </style>
+<style>
+    [x-cloak] {
+        display: none !important;
+    }
+</style>
 @endsection
