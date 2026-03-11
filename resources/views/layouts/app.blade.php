@@ -44,6 +44,10 @@
             <a href="{{ route('clientes.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('clientes.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
                 <i class="ph ph-users text-xl"></i> Clientes
             </a>
+
+            <a href="{{ route('guia-adi.index') }}" class="flex items-center gap-3 p-3 rounded-lg transition {{ request()->routeIs('guia_adi.*') ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-slate-800 hover:text-white text-slate-300' }}">
+                <i class="ph ph-printer text-xl"></i> Guia ADI
+            </a>
         </nav>
         <div class="p-4 border-t border-slate-800">
             <div class="flex items-center gap-3 p-2">

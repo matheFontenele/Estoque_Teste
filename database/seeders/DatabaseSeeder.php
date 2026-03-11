@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Cliente;
 use App\Models\Equipamento;
 use App\Models\Estoque;
+use App\Models\GuiaAdi;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -24,10 +25,10 @@ class DatabaseSeeder extends Seeder
 
         // 2. Estoques (Locais de Armazenamento)
         $estoqueFortaleza = Estoque::updateOrCreate(['nome' => 'Alucom Base'], ['localizacao' => 'Fortaleza - CE']);
-        $estoqueSantaCatarina = Estoque::updateOrCreate(['nome' => 'Filial Sul'], ['localizacao' => 'Florianopolis - SC']);
-        $estoqueParaiba = Estoque::updateOrCreate(['nome' => 'Filial Nordeste'], ['localizacao' => 'João Pessoa - PB']);
+        $estoqueSul = Estoque::updateOrCreate(['nome' => 'Filial Sul'], ['localizacao' => 'Florianopolis - SC']);
+        $estoqueNordeste = Estoque::updateOrCreate(['nome' => 'Filial Nordeste'], ['localizacao' => 'João Pessoa - PB']);
 
-        // 3. Clientes (Expandido)
+        // 3. Clientes
         $clientesData = [
             [
                 'nome' => 'HUAC - Hospital Universitario Alcides Carneiro',
@@ -73,162 +74,148 @@ class DatabaseSeeder extends Seeder
 
         $huac = Cliente::where('nome', 'like', '%HUAC%')->first();
         $tjce = Cliente::where('nome', 'like', '%Tribunal%')->first();
-        $receita = Cliente::where('nome', 'like', '%Receita%')->first();
+        $prefeitura = Cliente::where('nome', 'like', '%Prefeitura%')->first();
 
-        // 4. Equipamentos e Insumos (Distribuição Variada)
+        // 4. Guia ADI (Catálogo Técnico de Impressoras)
+        $modelosGuia = [
+            [
+                'fabricante' => 'Kyocera',
+                'marca_modelo' => 'Ecosys MA5500ifx',
+                'familia' => 'Multifuncional Laser Mono A4',
+                'toner' => 'TK-3412',
+                'rendimento' => '25.000 páginas',
+                'ppm' => 55,
+                'papel' => 'A4, Carta, Ofício',
+                'voltagem' => '120V',
+                'funcoes' => ['Impressão', 'Cópia', 'Digitalização', 'Fax'],
+                'resolucao' => '1200 x 1200 dpi',
+                'memoria' => '1.5 GB (Max 3.5 GB)',
+                'hdd' => 'Não Acompanha (Opcional SSD)',
+                'duplex' => 'Sim',
+                'capacidade_papel' => '600 / 2.600 folhas',
+                'pecas' => 'Kit de Manutenção MK-3372',
+                'cartao_sd' => 'Aceita',
+                'ndd' => 'ACEITA SOLUÇÃO EMBARCADA',
+                'obs' => 'Equipamento de alta performance para grandes grupos de trabalho.'
+            ],
+            [
+                'fabricante' => 'Brother',
+                'marca_modelo' => 'MFC-L6902DW',
+                'familia' => 'Multifuncional Laser Mono Profissional',
+                'toner' => 'TN-3492',
+                'rendimento' => '20.000 páginas',
+                'ppm' => 52,
+                'papel' => 'A4, A5, A6',
+                'voltagem' => '110V',
+                'funcoes' => ['Impressão', 'Cópia', 'Digitalização'],
+                'resolucao' => '1200 x 1200 dpi',
+                'memoria' => '1 GB',
+                'hdd' => 'Não Acompanha',
+                'duplex' => 'Sim',
+                'capacidade_papel' => '520 / 1.610 folhas',
+                'pecas' => 'Unidade de Cilindro DR-3440',
+                'cartao_sd' => 'Não Aceita',
+                'ndd' => 'ACEITA SOLUÇÃO EMBARCADA',
+                'obs' => 'Ideal para outsourcing de médio porte.'
+            ]
+        ];
+
+        foreach ($modelosGuia as $guia) {
+            GuiaAdi::updateOrCreate(['marca_modelo' => $guia['marca_modelo']], $guia);
+        }
+
+        // 5. Inventário (Equipamentos em Clientes e Estoques)
         $itensInventario = [
-            // --- EQUIPAMENTOS EM CLIENTES ---
+            // OPERACIONAL (VERDE)
             [
                 'categoria' => 'Equipamentos',
                 'subcategoria' => 'Impressoras/Multifuncionais',
                 'nome' => 'Kyocera Ecosys MA5500ifx',
-                'tombo' => '88769',
-                'serial' => 'WDAS56485',
-                'quantidade_estoque' => 1,
+                'serial' => 'KY001-OPS',
+                'tombo' => '10001',
                 'condicao' => 'Operacional',
-                'descricao' => 'Multifuncional no setor de Triagem',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
-                'estoque_id' => null,
                 'cliente_id' => $huac->id,
-            ],
-            [
-                'categoria' => 'Equipamentos',
-                'subcategoria' => 'Computadores',
-                'nome' => 'HP EliteDesk 800 G6',
-                'tombo' => '90021',
-                'serial' => 'BRJ021HPL',
-                'quantidade_estoque' => 1,
-                'condicao' => 'Reserva',
-                'descricao' => 'Máquina de backup no TI local',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
                 'estoque_id' => null,
-                'cliente_id' => $huac->id,
-            ],
-            [
-                'categoria' => 'Equipamentos',
-                'subcategoria' => 'Impressoras/Multifuncionais',
-                'nome' => 'Brother MFC-L6900DW',
-                'tombo' => '77210',
-                'serial' => 'BTH-99221-X',
-                'quantidade_estoque' => 1,
-                'condicao' => 'Devolução',
-                'descricao' => 'Troca solicitada por falha no fusor',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
-                'estoque_id' => null,
-                'cliente_id' => $tjce->id,
             ],
             [
                 'categoria' => 'Equipamentos',
                 'subcategoria' => 'Scanners',
                 'nome' => 'Kodak Alaris S2050',
-                'tombo' => 'SCAN-001',
-                'serial' => 'KDK554433',
-                'quantidade_estoque' => 1,
+                'serial' => 'KD001-OPS',
+                'tombo' => '10002',
                 'condicao' => 'Operacional',
-                'descricao' => 'Digitalização de processos judiciais',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
-                'estoque_id' => null,
                 'cliente_id' => $tjce->id,
+                'estoque_id' => null,
             ],
-
-            // --- EQUIPAMENTOS EM ESTOQUE (DISPONÍVEIS) ---
+            // RESERVA (AZUL)
             [
                 'categoria' => 'Equipamentos',
                 'subcategoria' => 'Computadores',
-                'nome' => 'Desktop Dell Optiplex',
-                'tombo' => '86745',
-                'serial' => 'WDAS56455',
-                'quantidade_estoque' => 1,
-                'condicao' => 'Operacional',
-                'descricao' => 'I7, 8GB RAM, SSD 240GB',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
-                'estoque_id' => $estoqueFortaleza->id,
-                'cliente_id' => null,
+                'nome' => 'HP EliteDesk 800 G6',
+                'serial' => 'HP001-RES',
+                'tombo' => '10003',
+                'condicao' => 'Reserva',
+                'cliente_id' => $huac->id,
+                'estoque_id' => null,
             ],
             [
                 'categoria' => 'Equipamentos',
                 'subcategoria' => 'Impressoras/Multifuncionais',
-                'nome' => 'Epson EcoTank L3250',
-                'tombo' => 'EPS-990',
-                'serial' => 'EPS-123456',
-                'quantidade_estoque' => 1,
-                'condicao' => 'Operacional',
-                'descricao' => 'Nova na caixa',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Não se Aplica',
-                'estoque_id' => $estoqueParaiba->id,
-                'cliente_id' => null,
+                'nome' => 'Brother MFC-L6902DW',
+                'serial' => 'BR001-RES',
+                'tombo' => '10004',
+                'condicao' => 'Reserva',
+                'cliente_id' => $prefeitura->id,
+                'estoque_id' => null,
+            ],
+            // DEVOLUÇÃO (AMARELO)
+            [
+                'categoria' => 'Equipamentos',
+                'subcategoria' => 'Impressoras/Multifuncionais',
+                'nome' => 'Epson L3250',
+                'serial' => 'EP001-DEV',
+                'tombo' => '10005',
+                'condicao' => 'Devolução',
+                'cliente_id' => $tjce->id,
+                'estoque_id' => null,
+                'descricao' => 'Cabeça de impressão entupida'
             ],
 
-            // --- INSUMOS DISTRIBUÍDOS NOS ESTOQUES ---
+            // DISPONÍVEL NO ESTOQUE (VERDE)
             [
-                'categoria' => 'Insumos',
-                'subcategoria' => 'Toners/Tintas',
-                'nome' => 'Toner TK 5372',
-                'tombo' => null,
-                'serial' => 'SN-TK5372-BASE',
-                'quantidade_estoque' => 50,
-                'condicao' => null,
-                'descricao' => 'Toner para Kyocera MA5500',
-                'cor' => 'Preto',
-                'compativel_com' => 'Kyocera MA5500',
+                'categoria' => 'Equipamentos',
+                'subcategoria' => 'Computadores',
+                'nome' => 'Dell Optiplex 7090',
+                'serial' => 'DELL-EST-01',
+                'tombo' => '10006',
+                'condicao' => 'Operacional',
+                'cliente_id' => null,
                 'estoque_id' => $estoqueFortaleza->id,
-                'cliente_id' => null,
             ],
+
+            // INSUMOS NOS ESTOQUES
             [
                 'categoria' => 'Insumos',
                 'subcategoria' => 'Toners/Tintas',
-                'nome' => 'Toner TK 5372',
-                'tombo' => null,
-                'serial' => 'SN-TK5372-SUL',
-                'quantidade_estoque' => 20,
-                'condicao' => null,
-                'descricao' => 'Estoque local Sul',
-                'cor' => 'Preto',
+                'nome' => 'Toner TK-3412',
+                'serial' => 'SN-TK3412-FOT',
+                'quantidade_estoque' => 30,
+                'estoque_id' => $estoqueFortaleza->id,
                 'compativel_com' => 'Kyocera MA5500',
-                'estoque_id' => $estoqueSantaCatarina->id,
-                'cliente_id' => null,
             ],
             [
                 'categoria' => 'Insumos',
                 'subcategoria' => 'Peças',
                 'nome' => 'Cilindro DR-3440',
-                'tombo' => null,
-                'serial' => 'SN-DR3440-PECA',
-                'quantidade_estoque' => 12,
-                'condicao' => null,
-                'descricao' => 'Unidade de imagem Brother',
-                'cor' => 'Não se Aplica',
-                'compativel_com' => 'Brother L6900dw',
-                'estoque_id' => $estoqueParaiba->id,
-                'cliente_id' => null,
-            ],
-            [
-                'categoria' => 'Insumos',
-                'subcategoria' => 'Papelaria',
-                'nome' => 'Papel A4 Report 500fls',
-                'tombo' => null,
-                'serial' => 'PAPEL-A4-FORT',
-                'quantidade_estoque' => 100,
-                'condicao' => null,
-                'descricao' => 'Caixas de papel sulfite',
-                'cor' => 'Branco',
-                'compativel_com' => 'Universal',
-                'estoque_id' => $estoqueFortaleza->id,
-                'cliente_id' => null,
-            ],
+                'serial' => 'SN-DR3440-SUL',
+                'quantidade_estoque' => 10,
+                'estoque_id' => $estoqueSul->id,
+                'compativel_com' => 'Brother L6902',
+            ]
         ];
 
         foreach ($itensInventario as $item) {
-            Equipamento::updateOrCreate(
-                ['serial' => $item['serial']],
-                $item
-            );
+            Equipamento::updateOrCreate(['serial' => $item['serial']], $item);
         }
     }
 }
