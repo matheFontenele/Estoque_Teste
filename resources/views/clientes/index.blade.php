@@ -105,7 +105,11 @@
                         <option value="ZapLok">ZapLok</option>
                     </select>
                 </div>
-
+                {{-- Localização --}}
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Endereço Completo</label>
+                    <input type="text" name="endereco" required placeholder="Rua, Número, Bairro" class="w-full rounded-xl border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-red-500">
+                </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="col-span-1">
                         <label class="block text-xs font-black text-slate-500 uppercase mb-2">UF</label>
@@ -116,7 +120,35 @@
                         <input type="text" name="cidade" required placeholder="Fortaleza" class="w-full rounded-xl border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-red-500">
                     </div>
                 </div>
-
+                {{-- Seção de SLA --}}
+                <div class="pt-4 border-t border-slate-100">
+                    <p class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Configurações de SLA (Horas)</p>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase">Atendimento</label>
+                            <input type="number" name="sla[Atendimento]" value="4" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase">Insumos</label>
+                            <input type="number" name="sla[Insumos]" value="24" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase">Substituição</label>
+                            <input type="number" name="sla[Substituição]" value="48" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase">Remanejamento</label>
+                            <input type="number" name="sla[Remanejamento]" value="72" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Tipo de Insumo</label>
+                        <select name="sla[Tipo]" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 text-sm outline-none">
+                            <option value="Compativel">Compatível</option>
+                            <option value="Original">Original</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="openModal = false" class="flex-1 py-3 font-bold text-slate-500">Cancelar</button>
                     <button type="submit" class="flex-1 py-3 font-black text-white bg-red-600 rounded-xl shadow-lg shadow-red-200">Cadastrar Cliente</button>

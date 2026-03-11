@@ -47,6 +47,7 @@ class ClienteController extends Controller
         'cnpj' => 'required|string|unique:clientes,cnpj',
         'estado' => 'required|string|max:2',
         'cidade' => 'required|string|max:255',
+        'endereco' => 'required|string|max:255',
         'contrato' => 'required|in:Alucom,Moreia,ZapLok', // Validação rigorosa
     ]);
 
