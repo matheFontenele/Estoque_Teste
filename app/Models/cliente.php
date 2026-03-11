@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
-    protected $fillable = ['nome', 'cnpj', 'estado', 'cidade', 'endereco', 'sla'];
-
+    protected $fillable = ['nome', 'cnpj', 'estado', 'cidade', 'endereco', 'sla', 'contrato'];
     // Isso converte o JSON do banco para Array no PHP automaticamente
     protected $casts = [
         'sla' => 'array',

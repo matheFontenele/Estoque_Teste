@@ -23,6 +23,12 @@
                         <p class="font-bold text-slate-700">{{ $cliente->cnpj }}</p>
                     </div>
                     <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Contrato Ativo</p>
+                        <span class="inline-block mt-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-lg font-black text-xs uppercase">
+                            {{ $cliente->contrato ?? 'Não Informado' }}
+                        </span>
+                    </div>
+                    <div>
                         <p class="text-[10px] font-black text-slate-400 uppercase">Localização</p>
                         <p class="font-bold text-slate-700">{{ $cliente->endereco }} - {{ $cliente->cidade }} - {{ $cliente->estado }}</p>
                     </div>

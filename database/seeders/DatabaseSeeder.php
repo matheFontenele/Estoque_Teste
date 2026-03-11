@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
                 'cnpj' => '12.345.678/0001-00',
                 'estado' => 'PB',
                 'cidade' => 'Campina Grande',
+                'contrato' => 'Alucom',
                 'endereco' => 'Endereço de teste tal CEP 0000000',
                 'sla' => ['Atendimento' => 4, 'Insumos' => 24, 'Substituição' => 48, 'Remanejamento' => 72, 'Tipo' => 'Compativel']
             ],
@@ -42,6 +43,7 @@ class DatabaseSeeder extends Seeder
                 'cnpj' => '11.222.333/0001-44',
                 'estado' => 'SC',
                 'cidade' => 'Florianopolis',
+                'contrato' => 'Moreia',
                 'endereco' => 'Endereço de teste tal CEP 0000000',
                 'sla' => ['Atendimento' => 4, 'Insumos' => 24, 'Substituição' => 48, 'Remanejamento' => 72, 'Tipo' => 'Original']
             ],
@@ -61,11 +63,12 @@ class DatabaseSeeder extends Seeder
                 'tombo' => '86745',
                 'serial' => 'WDAS56455',
                 'quantidade_estoque' => 1,
-                'condicao' => 'Disponivel',
+                'condicao' => 'Alugado',
                 'descricao' => 'I7, 8GB RAM, SSD 240GB',
                 'cor' => 'Não se Aplica',
                 'compativel_com' => 'Não se Aplica',
-                'estoque_id' => $estoqueFortaleza->id
+                'estoque_id' => $estoqueFortaleza->id,
+                'cliente_id' => null,
             ],
             [
                 'categoria' => 'Equipamentos',
@@ -78,7 +81,8 @@ class DatabaseSeeder extends Seeder
                 'descricao' => 'Multifuncional Mono de Alta Performance',
                 'cor' => 'Não se Aplica',
                 'compativel_com' => 'Não se Aplica',
-                'estoque_id' => $estoqueFortaleza->id
+                'estoque_id' => null,
+                'cliente_id' => 1,
             ],
             // Categoria: INSUMOS
             [

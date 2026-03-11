@@ -96,6 +96,16 @@
                     <input type="text" name="cnpj" required placeholder="00.000.000/0000-00" class="w-full rounded-xl border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-red-500">
                 </div>
 
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Contrato</label>
+                    <select name="contrato" required class="w-full rounded-xl border-slate-200 bg-slate-50 p-3 outline-none focus:ring-2 focus:ring-red-500 font-bold text-slate-700">
+                        <option value="">Selecione o Contrato...</option>
+                        <option value="Alucom">Alucom</option>
+                        <option value="Moreia">Moreia</option>
+                        <option value="ZapLok">ZapLok</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-3 gap-4">
                     <div class="col-span-1">
                         <label class="block text-xs font-black text-slate-500 uppercase mb-2">UF</label>
