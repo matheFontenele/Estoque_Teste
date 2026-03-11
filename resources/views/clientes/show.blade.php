@@ -7,7 +7,7 @@
             <i class="ph ph-arrow-left font-bold"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-black text-slate-800">{{ $cliente->razao_social }}</h1>
+            <h1 class="text-2xl font-black text-slate-800">{{ $cliente->nome }}</h1>
             <p class="text-slate-500 text-sm">Detalhes completos do cliente e ativos alocados.</p>
         </div>
     </div>
@@ -35,11 +35,11 @@
                     <div class="pt-4 border-t border-slate-100">
                         <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tempo de SLA</p>
                         <div class="p-3 bg-slate-50 rounded-xl text-sm text-slate-600 leading-relaxed italic">
-                            <p><strong>SLA de Atendimento:</strong> {{ $cliente->sla['Atendimento'] ?? 'Não definido' }} horas</p>
-                            <p><strong>SLA de Insumos:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
-                            <p><strong>SLA de Substituição:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
-                            <p><strong>SLA de Remanejamento:</strong> {{ $cliente->sla['Insumos'] ?? 'Não definido' }} horas</p>
-                            <p><strong>Tipos de Insumos:</strong> {{ $cliente->sla['Tipo'] ?? 'Não definido' }}</p>
+                            <p><strong>SLA de Atendimento:</strong> {{ $cliente->sla['Atendimento'] ?? 'N/D' }}h</p>
+                            <p><strong>SLA de Insumos:</strong> {{ $cliente->sla['Insumos'] ?? 'N/D' }}h</p>
+                            <p><strong>SLA de Substituição:</strong> {{ $cliente->sla['Substituição'] ?? 'N/D' }}h</p>
+                            <p><strong>SLA de Remanejamento:</strong> {{ $cliente->sla['Remanejamento'] ?? 'N/D' }}h</p>
+                            <p><strong>Tipos de Insumos:</strong> {{ $cliente->sla['Tipo'] ?? 'N/D' }}</p>
                         </div>
                     </div>
                 </div>
@@ -69,12 +69,24 @@
                             <td class="px-6 py-4 font-bold text-slate-700 text-sm">{{ $equip->nome }}</td>
                             <td class="px-6 py-4 text-slate-500 font-mono text-xs">{{ $equip->tombo }}</td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[9px] font-black uppercase">Operacional</span>
+                                @php
+                                $statusClasses = [
+                                'Operacional' => 'bg-emerald-100 text-emerald-700', // Verde
+                                'Reserva' => 'bg-blue-100 text-blue-700', // Azul
+                                'Devolução' => 'bg-amber-100 text-amber-700', // Amarelo
+                                ];
+                                $class = $statusClasses[$equip->condicao] ?? 'bg-slate-100 text-slate-600';
+                                @endphp
+                                <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase {{ $class }}">
+                                    {{ $equip->condicao ?? 'Indefinido' }}
+                                </span>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" class="px-6 py-10 text-center text-slate-400 italic text-sm">Nenhum equipamento vinculado a este cliente.</td>
+                            <td colspan="3" class="px-6 py-10 text-center text-slate-400 italic text-sm">
+                                Nenhum equipamento vinculado a este cliente.
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
