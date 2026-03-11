@@ -8,9 +8,19 @@ use Illuminate\Http\Request;
 class GuiaAdiController extends Controller
 {
     // Mostra a lista de impressoras (Cards)
-    public function index()
+    public function index(Request $request)
     {
-        $guias = GuiaAdi::all();
+        $search = $request->input('search');
+
+        $guias = GuiaAdi::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('marca_modelo', 'like', "%{$search}%")
+                    ->orWhere('toner', 'like', "%{$search}%") // Busca por Toner
+                    ->orWhere('fabricante', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(12);
+
         return view('guia_adi.index', compact('guias'));
     }
 
