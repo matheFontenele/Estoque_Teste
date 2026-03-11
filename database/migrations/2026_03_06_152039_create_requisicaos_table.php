@@ -12,19 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('requisicaos', function (Blueprint $table) {
-            $table->id('numero_requisicao'); // Auto-incremento (Nº Requisição)
-            $table->foreignId('user_id')->constrained('users'); // Solicitado
-            $table->date('data_solicitacao')->default(now()); // Data Atual
-            $table->date('previsao');
+            $table->id('numero_requisicao');
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('equipamento_id')->constrained('equipamentos');
+
+            $table->date('data_solicitacao')->default(now());
+            $table->date('data_prevista')->nullable();
+
             $table->enum('envio', ['Rota', 'Transportadora', 'Correios']);
             $table->string('estado');
             $table->string('cidade');
-            $table->foreignId('cliente_id')->constrained('clientes');
             $table->enum('etiqueta', ['Alucom', 'Moreia', 'ZapLoc']);
+
             $table->integer('quantidade')->default(1);
-            $table->foreignId('equipamento_id')->constrained('equipamentos');
             $table->boolean('is_substituicao')->default(false);
-            $table->string('patrimonio_anterior')->nullable(); // Para substituição
+            $table->string('patrimonio_anterior')->nullable();
+
             $table->timestamps();
         });
     }
