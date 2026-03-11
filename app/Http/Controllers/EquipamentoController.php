@@ -7,6 +7,7 @@ use App\Models\Equipamento;
 use Illuminate\Support\Facades\DB;
 use App\Models\Requisicao;
 use App\Models\Estoque;
+use App\Models\GuiaAdi;
 
 class EquipamentoController extends Controller
 {
@@ -16,6 +17,8 @@ class EquipamentoController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $modelosMaquinas = GuiaAdi::pluck('marca_modelo')->unique()->sort();
+        $modelosToners = GuiaAdi::whereNotNull('toner')->pluck('toner')->unique()->sort();
 
         $equipamentos = Equipamento::query()
             ->with(['requisicoes' => function ($q) {
@@ -37,7 +40,7 @@ class EquipamentoController extends Controller
             'alocado'            => \App\Models\Requisicao::count(),
         ];
 
-        return view('equipamentos.index', compact('equipamentos', 'stats', 'estoques'));
+        return view('equipamentos.index', compact('equipamentos', 'stats', 'estoques', 'modelosMaquinas', 'modelosToners'));
     }
 
     /**
