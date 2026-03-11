@@ -51,9 +51,21 @@
                     </span>
                 </td>
                 <td class="px-6 py-4">
-                    <button class="text-slate-400 hover:text-red-600">
-                        <i class="ph ph-printer text-xl"></i>
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('requisicoes.show', $req->numero_requisicao) }}" class="text-blue-500 hover:text-blue-700" title="Detalhes">
+                            <i class="ph ph-eye text-xl"></i>
+                        </a>
+
+                        @if(auth()->id() == $req->user_id)
+                        <a href="{{ route('requisicoes.edit', $req->numero_requisicao) }}" class="text-amber-500 hover:text-amber-700" title="Editar">
+                            <i class="ph ph-pencil-line text-xl"></i>
+                        </a>
+                        @endif
+
+                        <a href="{{ route('requisicoes.atender', $req->numero_requisicao) }}" class="text-green-500 hover:text-green-700" title="Atender Requisição">
+                            <i class="ph ph-check-circle text-xl"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
             @endforeach

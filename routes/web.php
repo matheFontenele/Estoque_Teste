@@ -22,3 +22,7 @@ Route::get('/clientes/{cliente}', [App\Http\Controllers\ClienteController::class
 
 //Rota para Guia de Impressoras
 Route::resource('guia-adi', GuiaAdiController::class);
+
+// Rota customizada para o atendimento
+Route::get('requisicoes/{id}/atender', [RequisicaoController::class, 'atender'])->name('requisicoes.atender');
+Route::post('requisicoes/{id}/processar-atendimento', [RequisicaoController::class, 'processarAtendimento'])->name('requisicoes.processar');

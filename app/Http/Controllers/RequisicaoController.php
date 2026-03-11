@@ -88,4 +88,37 @@ class RequisicaoController extends Controller
 
         return redirect()->route('requisicoes.index')->with('success', 'Requisição gravada com sucesso!');
     }
+
+    //Funções responsaveis por atendimento de requisições
+    public function atender($id)
+    {
+        $requisicao = Requisicao::with(['cliente', 'equipamento'])->findOrFail($id);
+        return view('requisicoes.atender', compact('requisicao'));
+    }
+
+    public function processarAtendimento(Request $request, $id)
+    {
+        $requisicao = Requisicao::findOrFail($id);
+
+        // Atualiza a situação e outros campos (ideal ter esses campos na migration)
+        $requisicao->update([
+            'situacao' => $request->situacao,
+            // Caso você adicione as colunas de separação na tabela:
+            // 'quantidade_separada' => $request->quantidade_separada,
+            // 'data_separacao' => $request->data_separacao,
+        ]);
+
+        // Lógica opcional: Se for 'Atendida', você pode dar baixa no estoque aqui
+        if ($request->situacao == 'Atendida') {
+            $requisicao->equipamento->decrement('quantidade_estoque', $request->quantidade_separada);
+        }
+
+        return redirect()->route('requisicoes.index')->with('success', 'Atendimento registrado com sucesso!');
+    }
+
+    public function show($id)
+    {
+        $requisicao = Requisicao::with(['cliente', 'equipamento', 'user'])->findOrFail($id);
+        return view('requisicoes.show', compact('requisicao'));
+    }
 }
