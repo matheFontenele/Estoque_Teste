@@ -11,6 +11,23 @@ use Illuminate\Support\Facades\DB;
 
 class RequisicaoController extends Controller
 {
+
+    public function dashboard()
+    {
+        $stats = [
+            'total_equipamentos' => Equipamento::sum('quantidade_estoque'),
+            'total_clientes' => Cliente::count(),
+            'estoque_baixo' => Equipamento::where('quantidade_estoque', '<', 5)->count(),
+            'requisicoes_recentes' => Requisicao::with(['cliente', 'equipamento'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
+            'total_requisicoes' => Requisicao::count(),
+        ];
+
+        return view('dashboard', compact('stats'));
+    }
+
     public function index()
     {
         $requisicoes = Requisicao::with(['cliente', 'equipamento', 'user'])
