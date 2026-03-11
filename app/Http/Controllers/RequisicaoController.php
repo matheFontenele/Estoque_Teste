@@ -39,10 +39,15 @@ class RequisicaoController extends Controller
 
     public function create()
     {
-        // IMPORTANTE: Verifique se existem registros nestas tabelas no banco
         $usuarios = User::all();
         $clientes = Cliente::all();
-        $equipamentos = Equipamento::where('quantidade_estoque', '>', 0)->get();
+
+        $equipamentos = Equipamento::where('quantidade_estoque', '>', 0)
+            ->where(function ($query) {
+                $query->where('condicao', 'Disponivel')
+                    ->orWhereNull('condicao');
+            })
+            ->get();
 
         return view('requisicoes.create', compact('usuarios', 'clientes', 'equipamentos'));
     }

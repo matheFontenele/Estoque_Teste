@@ -66,7 +66,7 @@
                             <option value="{{ $cliente->id }}" 
                                     data-estado="{{ $cliente->estado }}" 
                                     data-cidade="{{ $cliente->cidade }}">
-                                {{ $cliente->razao_social }}
+                                {{ $cliente->nome }}
                             </option>
                         @endforeach
                     </select>
