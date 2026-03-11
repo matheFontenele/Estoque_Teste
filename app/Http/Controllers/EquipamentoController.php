@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipamento;
+use Illuminate\Support\Facades\DB;
 use App\Models\Requisicao;
 use App\Models\Estoque;
 
@@ -44,40 +45,33 @@ class EquipamentoController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Se vierem itens da fila (múltiplos)
-        if ($request->has('itens')) {
+        // 1. Validação básica (ajuste conforme sua necessidade)
+        $request->validate([
+            'itens' => 'required|array|min:1',
+            'itens.*.nome' => 'required|string',
+            'itens.*.categoria' => 'required|string',
+            'itens.*.estoque_id' => 'required|exists:estoques,id',
+        ]);
+
+        try {
+            // 2. Inicia uma transação para garantir que ou salva tudo ou nada
+            DB::beginTransaction();
+
             foreach ($request->itens as $item) {
-                \App\Models\Equipamento::create([
-                    'nome'               => $item['nome'],
-                    'categoria'          => $item['categoria'],
-                    'tombo'              => $item['tombo'],
-                    'serial'             => $item['serial'] ?? null,
-                    'quantidade_estoque' => $item['quantidade_estoque'] ?? 1,
-                    'estoque_id'         => $item['estoque_id'],
-                    'situacao'           => 'disponivel',
-                ]);
+                // O Model Equipamento já cuidará de setar quantidade=1 
+                // e campos 'N/A' via método booted que arrumamos.
+                Equipamento::create($item);
             }
-        }
-        // 2. Se for um cadastro único (clicou em salvar sem adicionar à fila)
-        else {
-            $request->validate([
-                'nome' => 'required|string|max:255',
-                'estoque_id' => 'required|exists:estoques,id',
-                'tombo' => 'nullable|unique:equipamentos,tombo',
-            ]);
 
-            \App\Models\Equipamento::create([
-                'nome'               => $request->nome,
-                'categoria'          => $request->categoria ?? 'equipamento',
-                'tombo'              => $request->tombo,
-                'serial'             => $request->serial ?? null,
-                'quantidade_estoque' => $request->quantidade_estoque ?? 1,
-                'estoque_id'         => $request->estoque_id,
-                'situacao'           => 'disponivel',
-            ]);
-        }
+            DB::commit();
 
-        return redirect()->route('equipamentos.index')->with('success', 'Itens cadastrados com sucesso!');
+            return redirect()->route('equipamentos.index')
+                ->with('success', count($request->itens) . ' itens cadastrados com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Erro ao salvar itens: ' . $e->getMessage());
+        }
     }
     /**
      * Apresentar detalhes dos itens

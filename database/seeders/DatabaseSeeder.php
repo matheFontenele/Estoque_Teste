@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Criar Usuário Admin (Usando updateOrCreate para evitar erros)
+        // 1. Criar Usuário Admin
         User::updateOrCreate(
             ['email' => 'admin@admin.com'],
             [
@@ -22,12 +22,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Criar Estoques
+        // 2. Criar Estoques (Locais)
         $estoqueFortaleza = Estoque::updateOrCreate(['nome' => 'Alucom Base'], ['localizacao' => 'Fortaleza - CE']);
         $estoqueSantaCatarina = Estoque::updateOrCreate(['nome' => 'Filial Santa Catarina'], ['localizacao' => 'Florianopolis - SC']);
         $estoqueParaiba = Estoque::updateOrCreate(['nome' => 'Filial Paraiba'], ['localizacao' => 'João Pessoa - PB']);
 
-        // 3. Criar Clientes (CNPJs únicos corrigidos)
+        // 3. Criar Clientes
         $clientes = [
             [
                 'nome' => 'HUAC - Hospital Universitario Alcides Carneiro',
@@ -38,16 +38,8 @@ class DatabaseSeeder extends Seeder
                 'sla' => ['Atendimento' => 4, 'Insumos' => 24, 'Substituição' => 48, 'Remanejamento' => 72, 'Tipo' => 'Compativel']
             ],
             [
-                'nome' => 'Comando da Aeronautica',
-                'cnpj' => '98.765.432/0001-99', // CNPJ 1
-                'estado' => 'DF',
-                'cidade' => 'Brasilia',
-                'endereco' => 'Endereço de teste tal CEP 0000000',
-                'sla' => ['Atendimento' => 4, 'Insumos' => 24, 'Substituição' => 48, 'Remanejamento' => 72, 'Tipo' => 'Compativel']
-            ],
-            [
                 'nome' => 'Receita Federal',
-                'cnpj' => '11.222.333/0001-44', // ALTERADO PARA SER ÚNICO
+                'cnpj' => '11.222.333/0001-44',
                 'estado' => 'SC',
                 'cidade' => 'Florianopolis',
                 'endereco' => 'Endereço de teste tal CEP 0000000',
@@ -59,44 +51,68 @@ class DatabaseSeeder extends Seeder
             Cliente::updateOrCreate(['cnpj' => $c['cnpj']], $c);
         }
 
-        // 4. Criar Equipamentos vinculados aos Estoques específicos
-        $equipamentos = [
+        // 4. Criar Itens (Equipamentos e Insumos) com a nova hierarquia
+        $itensInventario = [
+            // Categoria: EQUIPAMENTOS
             [
-                'nome' => 'MICRO',
+                'categoria' => 'Equipamentos',
+                'subcategoria' => 'Computadores',
+                'nome' => 'Desktop Dell Optiplex',
                 'tombo' => '86745',
                 'serial' => 'WDAS56455',
                 'quantidade_estoque' => 1,
-                'situacao' => 'disponivel',
-                'cor' => 'N/A',
+                'condicao' => 'Disponivel',
                 'descricao' => 'I7, 8GB RAM, SSD 240GB',
+                'cor' => 'Não se Aplica',
+                'compativel_com' => 'Não se Aplica',
                 'estoque_id' => $estoqueFortaleza->id
             ],
             [
-                'nome' => 'MULTIFUNCIONAL',
+                'categoria' => 'Equipamentos',
+                'subcategoria' => 'Impressoras/Multifuncionais',
+                'nome' => 'Kyocera Ecosys MA5500ifx',
                 'tombo' => '88769',
                 'serial' => 'WDAS56485',
                 'quantidade_estoque' => 1,
-                'situacao' => 'disponivel',
-                'cor' => 'N/A',
-                'descricao' => 'MONO KYOCERA ECOSYS MA5500IFX',
+                'condicao' => 'Disponivel',
+                'descricao' => 'Multifuncional Mono de Alta Performance',
+                'cor' => 'Não se Aplica',
+                'compativel_com' => 'Não se Aplica',
                 'estoque_id' => $estoqueFortaleza->id
             ],
+            // Categoria: INSUMOS
             [
+                'categoria' => 'Insumos',
+                'subcategoria' => 'Toners/Tintas',
                 'nome' => 'Toner TK 5372',
-                'tombo' => null, // Sem tombo
-                'serial' => null,
+                'tombo' => null,
+                'serial' => 'SN-TK5372-001', // Identificador único para o seeder não duplicar
                 'quantidade_estoque' => 15,
-                'situacao' => 'disponivel',
+                'condicao' => null,
+                'descricao' => 'Toner de alto rendimento',
                 'cor' => 'Preto',
-                'descricao' => 'Compativel com impressora MA5500',
+                'compativel_com' => 'Kyocera MA5500',
                 'estoque_id' => $estoqueSantaCatarina->id
+            ],
+            [
+                'categoria' => 'Insumos',
+                'subcategoria' => 'Peças',
+                'nome' => 'Cilindro DR-3440',
+                'tombo' => null,
+                'serial' => 'SN-DR3440-PECA',
+                'quantidade_estoque' => 5,
+                'condicao' => null,
+                'descricao' => 'Unidade de imagem',
+                'cor' => 'Não se Aplica',
+                'compativel_com' => 'Brother L6900dw',
+                'estoque_id' => $estoqueParaiba->id
             ],
         ];
 
-        foreach ($equipamentos as $e) {
+        foreach ($itensInventario as $item) {
             Equipamento::updateOrCreate(
-                ['serial' => $e['serial'], 'tombo' => $e['tombo']],
-                $e
+                ['serial' => $item['serial']], 
+                $item
             );
         }
     }
